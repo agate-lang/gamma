@@ -5,8 +5,13 @@ project(GAMMA
   LANGUAGES C
 )
 
+find_package(sdl2 REQUIRED)
+
 add_executable(gamma
   src/gamma.c
+
+  vendor/agate/agate.c
+  vendor/agate/agate-support.c
 )
 
 if(MSVC)
@@ -18,10 +23,12 @@ endif()
 target_include_directories(gamma
   PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/agate"
 )
 
 target_link_libraries(gamma
   PRIVATE
+    SDL2::SDL2
     m
 )
 
