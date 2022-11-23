@@ -18,6 +18,11 @@ add_executable(gamma
 
 if(MSVC)
   target_compile_options(gamma PRIVATE /W3)
+  target_compile_definitions(gamma
+    PRIVATE
+      NOMINMAX
+      _CRT_SECURE_NO_WARNINGS
+  )
 else()
   target_compile_options(gamma PRIVATE -Wall -Wpedantic)
 endif()
@@ -31,8 +36,14 @@ target_include_directories(gamma
 target_link_libraries(gamma
   PRIVATE
     SDL2::SDL2
-    m
 )
+
+if(UNIX)
+  target_link_libraries(gamma
+    PRIVATE
+      m
+  )
+endif()
 
 install(
   TARGETS gamma
