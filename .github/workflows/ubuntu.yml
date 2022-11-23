@@ -18,16 +18,10 @@ jobs:
           sudo apt update
           sudo apt install -y libsdl2-dev
 
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: agate-lang/gamma
           submodules: recursive
-          ref: ${{ steps.extract_branch.outputs.branch }}
 
       - name: Configure
         run: cmake -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -S ${{ github.workspace }} -B ${{ github.workspace }}/build

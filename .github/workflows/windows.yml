@@ -22,7 +22,7 @@ jobs:
           path: vcpkg
           key: ${{ runner.os }}-vcpkg-${{ env.VCPKG_COMMIT }}-v1
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         if: steps.cache-vcpkg.outputs.cache-hit != 'true'
         with:
           repository: Microsoft/vcpkg
@@ -38,16 +38,10 @@ jobs:
           .\bootstrap-vcpkg.bat
           .\vcpkg.exe install sdl2:x64-windows
 
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: agate-lang/gamma
           submodules: recursive
-          ref: ${{ steps.extract_branch.outputs.branch }}
           path: gamma
 
       - name: Configure
