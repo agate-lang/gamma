@@ -9,6 +9,8 @@ find_package(sdl2 REQUIRED)
 
 add_executable(gamma
   src/gamma.c
+  src/gamma_common.c
+  src/gamma_time.c
 
   vendor/agate/agate.c
   vendor/agate/agate-support.c

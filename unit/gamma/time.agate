@@ -1,0 +1,28 @@
+# gamma, GAMes Made with Agate
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2022 Julien Bernard
+
+class Time {
+  static now foreign
+
+  static from_seconds(value) foreign
+  static from_milliseconds(value) foreign
+  static from_nanoseconds(value) foreign
+
+  static to_seconds(value) foreign
+  static to_milliseconds(value) foreign
+  static to_nanoseconds(value) foreign
+}
+
+class Clock {
+  construct new() {
+    @now = Time.now
+  }
+
+  restart() {
+    def now = Time.now
+    def delta = now - @now
+    @now = now
+    return Time.to_seconds(delta)
+  }
+}

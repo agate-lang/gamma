@@ -9,6 +9,9 @@
 #include "agate.h"
 #include "agate-support.h"
 
+#include "gamma_common.h"
+#include "gamma_time.h"
+
 int main(int argc, char *argv[]) {
 
   // initialize SDL
@@ -24,6 +27,9 @@ int main(int argc, char *argv[]) {
   agateConfigInitialize(&config);
 
   AgateVM *vm = agateExNewVM(&config);
+
+
+  agateExForeignMethodAddHandler(vm, gammaTimeMethodHandler, "gamma/time");
 
 
   // shutdown Agate
