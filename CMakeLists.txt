@@ -25,8 +25,7 @@ if(MSVC)
   )
   target_link_options(gamma
     PRIVATE
-      /SUBSYSTEM:WINDOWS
-      /ENTRY:mainCRTStartup
+      /NODEFAULTLIB:libcmt
   )
 else()
   target_compile_options(gamma PRIVATE -Wall -Wpedantic)
@@ -40,7 +39,8 @@ target_include_directories(gamma
 
 target_link_libraries(gamma
   PRIVATE
-    SDL2::SDL2
+    $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
+    $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
 )
 
 if(UNIX)
