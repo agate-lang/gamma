@@ -23,7 +23,11 @@ if(MSVC)
       NOMINMAX
       _CRT_SECURE_NO_WARNINGS
   )
-  target_link_options(gamma PRIVATE /SUBSYSTEM:CONSOLE)
+  target_link_options(gamma
+    PRIVATE
+      /SUBSYSTEM:WINDOWS
+      /ENTRY:mainCRTStartup
+  )
 else()
   target_compile_options(gamma PRIVATE -Wall -Wpedantic)
 endif()
