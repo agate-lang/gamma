@@ -25,7 +25,7 @@ if(MSVC)
   )
   target_link_options(gamma
     PRIVATE
-      /NODEFAULTLIB:libcmt
+      /NODEFAULTLIB:$<IF:$<CONFIG:Debug>,libcmtd,libcmt>
   )
 else()
   target_compile_options(gamma PRIVATE -Wall -Wpedantic)
