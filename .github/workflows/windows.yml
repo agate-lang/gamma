@@ -17,7 +17,7 @@ jobs:
     steps:
       - name: vcpkg cache
         id: cache-vcpkg
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v3
         with:
           path: vcpkg
           key: ${{ runner.os }}-vcpkg-${{ env.VCPKG_COMMIT }}-v1
