@@ -1,0 +1,80 @@
+# gamma, GAMes Made with Agate
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2022 Julien Bernard
+
+class Event {
+  static poll() foreign
+  static wait() foreign
+
+  type foreign
+
+  static KEY_PRESSED foreign
+  static KEY_RELEASED foreign
+  static MOUSE_MOTION foreign
+  static MOUSE_BUTTON_PRESSED foreign
+  static MOUSE_BUTTON_RELEASED foreign
+  static QUIT foreign
+  static WINDOW foreign
+  static RESIZE foreign
+}
+
+foreign class GenericEvent is Event {
+}
+
+foreign class KeyboardEvent is Event {
+  window_id foreign
+  pressed foreign
+  repeat foreign
+  scancode foreign
+  keycode foreign
+  modifiers foreign
+}
+
+foreign class MouseMotionEvent is Event {
+  window_id foreign
+  coordinates foreign
+  motion foreign
+}
+
+foreign class MouseButtonEvent is Event {
+  window_id foreign
+  button foreign
+  pressed foreign
+  clicks foreign
+  coordinates foreign
+}
+
+foreign class WindowEvent is Event {
+  window_id foreign
+}
+
+foreign class ResizeEvent is Event {
+  window_id foreign
+  size foreign
+}
+
+class Mouse {
+
+}
+
+class Scancode {
+
+}
+
+class Keycode {
+
+}
+
+class Keyboard {
+  static scancode_name(scancode) foreign
+  static keycode_name(keycode) foreign
+  static localize(scancode) foreign
+  static unlocalize(keycode) foreign
+}
+
+class Modifier {
+  static NONE foreign
+  static LSHIFT foreign
+  static RSHIFT foreign
+  static SHIFT foreign
+}

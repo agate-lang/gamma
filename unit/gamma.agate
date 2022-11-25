@@ -1,3 +1,177 @@
 # gamma, GAMes Made with Agate
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 Julien Bernard
+
+foreign class Vec2F {
+  construct zero() foreign
+  construct new(x, y) foreign
+  construct unit(angle) foreign
+
+  x foreign
+  y foreign
+  x=(val) foreign
+  y=(val) foreign
+
+  + foreign
+  - foreign
+
+  +(other) foreign
+  -(other) foreign
+  *(other) foreign
+  /(other) foreign
+
+  ==(other) foreign
+  !=(other) foreign
+}
+
+foreign class Vec2I {
+  construct zero() foreign
+  construct new(x, y) foreign
+
+  x foreign
+  y foreign
+  x=(val) foreign
+  y=(val) foreign
+
+  + foreign
+  - foreign
+
+  +(other) foreign
+  -(other) foreign
+  *(other) foreign
+  /(other) foreign
+
+  ==(other) foreign
+  !=(other) foreign
+}
+
+foreign class Color {
+  construct new(r, g, b, a) foreign
+  construct rgba32(val) foreign
+
+  r foreign
+  g foreign
+  b foreign
+  a foreign
+
+  r=(val) foreign
+  g=(val) foreign
+  b=(val) foreign
+  a=(val) foreign
+
+  + foreign
+  - foreign
+
+  +(other) foreign
+  -(other) foreign
+  *(other) foreign
+  /(other) foreign
+
+  ==(other) foreign
+  !=(other) foreign
+
+  darker(percent) foreign
+  darker() { .darker(0.5) }
+  lighter(percent) foreign
+  lighter() { .lighter(0.5) }
+
+  static BLACK      { Color.new(0.0, 0.0, 0.0, 1.0) }
+  static WHITE      { Color.new(1.0, 1.0, 1.0, 1.0) }
+
+  static RED        { Color.new(1.0, 0.0, 0.0, 1.0) }
+  static GREEN      { Color.new(0.0, 1.0, 0.0, 1.0) }
+  static BLUE       { Color.new(0.0, 0.0, 1.0, 1.0) }
+
+  static CYAN       { Color.new(0.0, 1.0, 1.0, 1.0) }
+  static MAGENTA    { Color.new(1.0, 0.0, 1.0, 1.0) }
+  static YELLOW     { Color.new(1.0, 1.0, 0.0, 1.0) }
+
+  static ORANGE     { Color.new(1.0, 0.5, 0.0, 1.0) }
+  static ROSE       { Color.new(1.0, 0.0, 0.5, 1.0) }
+  static CHARTREUSE { Color.new(0.5, 1.0, 0.0, 1.0) }
+  static SPRING     { Color.new(0.0, 1.0, 0.5, 1.0) }
+  static VIOLET     { Color.new(0.5, 0.0, 1.0, 1.0) }
+  static AZURE      { Color.new(0.0, 0.5, 1.0, 1.0) }
+
+  static TRANSPARENT { Color.new(0.0, 0.0, 0.0, 0.0) }
+  static OPAQUE(val) { Color.new(1.0, 1.0, 1.0, val) }
+  static GRAY(val)  { Color.new(val, val, val, 1.0) }
+}
+
+foreign class RectF {
+  construct new(x, y, w, h) foreign
+  construct new(position, size) foreign
+  construct new(size) foreign
+
+  x foreign
+  y foreign
+  w foreign
+  h foreign
+
+  x=(val) foreign
+  y=(val) foreign
+  w=(val) foreign
+  h=(val) foreign
+
+  position foreign
+  size foreign
+  center foreign
+
+  contains(x, y) foreign
+  contains(other) foreign
+
+  intersects(other) foreign
+}
+
+foreign class RectI {
+  construct new(x, y, w, h) foreign
+  construct new(position, size) foreign
+  construct new(size) foreign
+
+  x foreign
+  y foreign
+  w foreign
+  h foreign
+
+  x=(val) foreign
+  y=(val) foreign
+  w=(val) foreign
+  h=(val) foreign
+
+  position foreign
+  size foreign
+
+  top_left foreign
+  top_center foreign
+  top_right foreign
+  center_left foreign
+  center foreign
+  center_right foreign
+  bottom_left foreign
+  bottom_center foreign
+  bottom_right foreign
+
+  contains(x, y) foreign
+  contains(other) foreign
+
+  intersects(other) foreign
+}
+
+foreign class Mat3F {
+  construct new() foreign
+  construct translation(tx, ty) foreign
+  construct rotation(angle) foreign
+  construct rotation(angle, center) foreign
+  construct scale(sx, sy) foreign
+
+  [i,j] foreign
+
+  +(other) foreign
+  -(other) foreign
+  *(other) foreign
+
+  invert() foreign
+
+  transform_point(p) foreign
+  transform_vector(p)
+}

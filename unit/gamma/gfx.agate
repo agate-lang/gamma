@@ -1,0 +1,19 @@
+# gamma, GAMes Made with Agate
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2022 Julien Bernard
+
+foreign class Image {
+
+}
+
+foreign class Texture {
+
+}
+
+foreign class Font {
+
+}
+
+foreign class Text {
+
+}
