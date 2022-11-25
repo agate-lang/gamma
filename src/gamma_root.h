@@ -1,16 +1,14 @@
 #ifndef GAMMA_ROOT_H
 #define GAMMA_ROOT_H
 
-#include <stdint.h>
-
 struct gammaVec2F {
   float x;
   float y;
 };
 
 struct gammaVec2I {
-  int64_t x;
-  int64_t y;
+  int x;
+  int y;
 };
 
 struct gammaColor {
@@ -28,10 +26,10 @@ struct gammaRectF {
 };
 
 struct gammaRectI {
-  int64_t x;
-  int64_t y;
-  int64_t w;
-  int64_t h;
+  int x;
+  int y;
+  int w;
+  int h;
 };
 
 #endif // GAMMA_ROOT_H

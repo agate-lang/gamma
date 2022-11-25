@@ -2,6 +2,10 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 Julien Bernard
 
+foreign class Renderer {
+  construct new(window) foreign
+}
+
 foreign class Image {
 
 }
@@ -10,10 +14,6 @@ foreign class Texture {
 
 }
 
-foreign class Font {
-
-}
-
-foreign class Text {
+foreign class Shader {
 
 }

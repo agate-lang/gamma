@@ -5,7 +5,12 @@ project(GAMMA
   LANGUAGES C
 )
 
+include(GNUInstallDirs)
+
 find_package(sdl2 REQUIRED)
+
+set(GAMMA_UNIT_DIRECTORY "${CMAKE_INSTALL_FULL_DATAROOTDIR}/gamma/unit")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
 add_executable(gamma
   src/gamma.c
@@ -13,6 +18,7 @@ add_executable(gamma
   src/gamma_event.c
   src/gamma_root.c
   src/gamma_time.c
+  src/gamma_window.c
 
   vendor/agate/agate.c
   vendor/agate/agate-support.c
@@ -55,4 +61,9 @@ endif()
 install(
   TARGETS gamma
   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+)
+
+install(
+  DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/unit"
+  DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/gamma"
 )

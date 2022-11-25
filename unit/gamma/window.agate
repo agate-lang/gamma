@@ -1,0 +1,9 @@
+# gamma, GAMes Made with Agate
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2022 Julien Bernard
+
+foreign class Window {
+  construct new(title, w, h) foreign
+  is_open foreign
+  close() foreign
+}

@@ -7,11 +7,11 @@ class Time {
 
   static from_seconds(value) foreign
   static from_milliseconds(value) foreign
-  static from_nanoseconds(value) foreign
+  static from_microseconds(value) foreign
 
   static to_seconds(value) foreign
   static to_milliseconds(value) foreign
-  static to_nanoseconds(value) foreign
+  static to_microseconds(value) foreign
 }
 
 class Clock {

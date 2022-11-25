@@ -36,7 +36,74 @@ static void gammaTimeNow(AgateVM *vm) {
 #endif
 }
 
+static void gammaTimeFromSeconds(AgateVM *vm) {
+  int64_t nanoseconds = 0;
 
+  switch (agateSlotType(vm, 1)) {
+    case AGATE_TYPE_FLOAT:
+      nanoseconds = agateSlotGetFloat(vm, 1) * 1e9;
+      break;
+    case AGATE_TYPE_INT:
+      nanoseconds = agateSlotGetInt(vm, 1) * INT64_C(1000000000);
+      break;
+    default:
+      break;
+  }
+
+  agateSlotSetInt(vm, AGATE_RETURN_SLOT, nanoseconds);
+}
+
+static void gammaTimeFromMilliseconds(AgateVM *vm) {
+  int64_t nanoseconds = 0;
+
+  switch (agateSlotType(vm, 1)) {
+    case AGATE_TYPE_FLOAT:
+      nanoseconds = agateSlotGetFloat(vm, 1) * 1e6;
+      break;
+    case AGATE_TYPE_INT:
+      nanoseconds = agateSlotGetInt(vm, 1) * INT64_C(1000000);
+      break;
+    default:
+      break;
+  }
+
+  agateSlotSetInt(vm, AGATE_RETURN_SLOT, nanoseconds);
+}
+
+static void gammaTimeFromMicroseconds(AgateVM *vm) {
+  int64_t nanoseconds = 0;
+
+  switch (agateSlotType(vm, 1)) {
+    case AGATE_TYPE_FLOAT:
+      nanoseconds = agateSlotGetFloat(vm, 1) * 1e3;
+      break;
+    case AGATE_TYPE_INT:
+      nanoseconds = agateSlotGetInt(vm, 1) * INT64_C(1000);
+      break;
+    default:
+      break;
+  }
+
+  agateSlotSetInt(vm, AGATE_RETURN_SLOT, nanoseconds);
+}
+
+static void gammaTimeToSeconds(AgateVM *vm) {
+  assert(agateSlotType(vm, 1) == AGATE_TYPE_INT);
+  int64_t nanoseconds = agateSlotGetInt(vm, 1);
+  agateSlotSetFloat(vm, AGATE_RETURN_SLOT, nanoseconds * 1e-9);
+}
+
+static void gammaTimeToMilliseconds(AgateVM *vm) {
+  assert(agateSlotType(vm, 1) == AGATE_TYPE_INT);
+  int64_t nanoseconds = agateSlotGetInt(vm, 1);
+  agateSlotSetInt(vm, AGATE_RETURN_SLOT, nanoseconds / 1000000);
+}
+
+static void gammaTimeToMicroseconds(AgateVM *vm) {
+  assert(agateSlotType(vm, 1) == AGATE_TYPE_INT);
+  int64_t nanoseconds = agateSlotGetInt(vm, 1);
+  agateSlotSetInt(vm, AGATE_RETURN_SLOT, nanoseconds / 1000);
+}
 
 AgateForeignMethodFunc gammaTimeMethodHandler(AgateVM *vm, const char *unit_name, const char *class_name, AgateForeignMethodKind kind, const char *signature) {
   assert(gammaEquals(unit_name, "gamma/time"));
@@ -44,6 +111,12 @@ AgateForeignMethodFunc gammaTimeMethodHandler(AgateVM *vm, const char *unit_name
   if (gammaEquals(class_name, "Time")) {
     if (kind == AGATE_FOREIGN_METHOD_CLASS) {
       if (gammaEquals(signature, "now")) { return gammaTimeNow; }
+      if (gammaEquals(signature, "from_seconds(_)")) { return gammaTimeFromSeconds; }
+      if (gammaEquals(signature, "from_milliseconds(_)")) { return gammaTimeFromMilliseconds; }
+      if (gammaEquals(signature, "from_microseconds(_)")) { return gammaTimeFromMicroseconds; }
+      if (gammaEquals(signature, "to_seconds(_)")) { return gammaTimeToSeconds; }
+      if (gammaEquals(signature, "to_milliseconds(_)")) { return gammaTimeToMilliseconds; }
+      if (gammaEquals(signature, "to_microseconds(_)")) { return gammaTimeToMicroseconds; }
     }
   }
 
