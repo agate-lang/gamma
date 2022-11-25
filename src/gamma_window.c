@@ -37,8 +37,8 @@ static void gammaWindowNew(AgateVM *vm) {
 
 
   const char *title = agateSlotGetString(vm, 1);
-  int64_t w = agateSlotGetInt(vm, 2);
-  int64_t h = agateSlotGetInt(vm, 3);
+  int w = (int) agateSlotGetInt(vm, 2);
+  int h = (int) agateSlotGetInt(vm, 3);
 
   window->ptr = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_OPENGL);
   window->should_close = false;

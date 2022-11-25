@@ -43,7 +43,7 @@ static void error(AgateVM *vm, AgateErrorKind kind, const char *unit_name, int l
 }
 
 static void input(AgateVM *vm, char *buffer, size_t size) {
-  fgets(buffer, size, stdin);
+  fgets(buffer, (int) size, stdin);
 }
 
 int main(int argc, char *argv[]) {

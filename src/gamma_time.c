@@ -41,7 +41,7 @@ static void gammaTimeFromSeconds(AgateVM *vm) {
 
   switch (agateSlotType(vm, 1)) {
     case AGATE_TYPE_FLOAT:
-      nanoseconds = agateSlotGetFloat(vm, 1) * 1e9;
+      nanoseconds = (int64_t) (agateSlotGetFloat(vm, 1) * 1e9);
       break;
     case AGATE_TYPE_INT:
       nanoseconds = agateSlotGetInt(vm, 1) * INT64_C(1000000000);
@@ -58,7 +58,7 @@ static void gammaTimeFromMilliseconds(AgateVM *vm) {
 
   switch (agateSlotType(vm, 1)) {
     case AGATE_TYPE_FLOAT:
-      nanoseconds = agateSlotGetFloat(vm, 1) * 1e6;
+      nanoseconds = (int64_t) (agateSlotGetFloat(vm, 1) * 1e6);
       break;
     case AGATE_TYPE_INT:
       nanoseconds = agateSlotGetInt(vm, 1) * INT64_C(1000000);
@@ -75,7 +75,7 @@ static void gammaTimeFromMicroseconds(AgateVM *vm) {
 
   switch (agateSlotType(vm, 1)) {
     case AGATE_TYPE_FLOAT:
-      nanoseconds = agateSlotGetFloat(vm, 1) * 1e3;
+      nanoseconds = (int64_t) (agateSlotGetFloat(vm, 1) * 1e3);
       break;
     case AGATE_TYPE_INT:
       nanoseconds = agateSlotGetInt(vm, 1) * INT64_C(1000);
