@@ -13,15 +13,15 @@
 // class
 
 static ptrdiff_t gammaWindowAllocate(AgateVM *vm, const char *unit_name, const char *class_name) {
-  return sizeof(struct gammaWindow);
+  return sizeof(struct GammaWindow);
 }
 
 static uint64_t gammaWindowTag(AgateVM *vm, const char *unit_name, const char *class_name) {
   return GAMMA_WINDOW_TAG;
 }
 
-void gammaWindowDestroy(AgateVM *vm, const char *unit_name, const char *class_name, void *data) {
-  struct gammaWindow *window = data;
+static void gammaWindowDestroy(AgateVM *vm, const char *unit_name, const char *class_name, void *data) {
+  struct GammaWindow *window = data;
 
   if (window->ptr != NULL) {
     SDL_DestroyWindow(window->ptr);
@@ -33,7 +33,7 @@ void gammaWindowDestroy(AgateVM *vm, const char *unit_name, const char *class_na
 
 static void gammaWindowNew(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
-  struct gammaWindow *window = agateSlotGetForeign(vm, 0);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
 
 
   const char *title = agateSlotGetString(vm, 1);
@@ -47,13 +47,13 @@ static void gammaWindowNew(AgateVM *vm) {
 
 static void gammaWindowIsOpen(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
-  struct gammaWindow *window = agateSlotGetForeign(vm, 0);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
   agateSlotSetBool(vm, AGATE_RETURN_SLOT, !window->should_close);
 }
 
 static void gammaWindowClose(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
-  struct gammaWindow *window = agateSlotGetForeign(vm, 0);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
   window->should_close = true;
   agateSlotSetNil(vm, AGATE_RETURN_SLOT);
 }

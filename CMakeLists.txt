@@ -16,12 +16,15 @@ add_executable(gamma
   src/gamma.c
   src/gamma_common.c
   src/gamma_event.c
+  src/gamma_gfx.c
   src/gamma_root.c
   src/gamma_time.c
   src/gamma_window.c
 
   vendor/agate/agate.c
   vendor/agate/agate-support.c
+
+  vendor/glad/src/glad.c
 )
 
 if(MSVC)
@@ -36,13 +39,14 @@ if(MSVC)
       /NODEFAULTLIB:$<IF:$<CONFIG:Debug>,libcmtd,libcmt>
   )
 else()
-  target_compile_options(gamma PRIVATE -Wall -Wpedantic)
+  target_compile_options(gamma PRIVATE -Wall)
 endif()
 
 target_include_directories(gamma
   PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/agate"
+    "${CMAKE_CURRENT_SOURCE_DIR}/vendor/glad/include"
 )
 
 target_link_libraries(gamma

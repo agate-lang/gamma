@@ -4,6 +4,9 @@
 
 foreign class Renderer {
   construct new(window) foreign
+  clear() foreign
+  clear(color) foreign
+  display() foreign
 }
 
 foreign class Image {

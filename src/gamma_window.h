@@ -5,7 +5,7 @@
 
 #include "agate.h"
 
-struct gammaWindow {
+struct GammaWindow {
   SDL_Window *ptr;
   bool should_close;
   bool fullscreen;

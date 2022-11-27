@@ -1,31 +1,31 @@
 #ifndef GAMMA_ROOT_H
 #define GAMMA_ROOT_H
 
-struct gammaVec2F {
+struct GammaVec2F {
   float x;
   float y;
 };
 
-struct gammaVec2I {
+struct GammaVec2I {
   int x;
   int y;
 };
 
-struct gammaColor {
+struct GammaColor {
   float r;
   float g;
   float b;
   float a;
 };
 
-struct gammaRectF {
+struct GammaRectF {
   float x;
   float y;
   float w;
   float h;
 };
 
-struct gammaRectI {
+struct GammaRectI {
   int x;
   int y;
   int w;
