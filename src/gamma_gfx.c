@@ -67,7 +67,10 @@ static void gammaRendererClear0(AgateVM *vm) {
 }
 
 static void gammaRendererClear1(AgateVM *vm) {
-  glClearColor(1.0, 1.0, 1.0, 1.0);
+  assert(agateSlotGetForeignTag(vm, 1) == GAMMA_COLOR_TAG);
+  struct GammaColor *color = agateSlotGetForeign(vm, 1);
+
+  glClearColor(color->r, color->g, color->b, color->a);
   glClear(GL_COLOR_BUFFER_BIT);
 }
 

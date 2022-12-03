@@ -59,9 +59,6 @@ foreign class Color {
   b=(val) foreign
   a=(val) foreign
 
-  + foreign
-  - foreign
-
   +(other) foreign
   -(other) foreign
   *(other) foreign
@@ -74,6 +71,8 @@ foreign class Color {
   darker() { .darker(0.5) }
   lighter(percent) foreign
   lighter() { .lighter(0.5) }
+
+  to_s { "(%(.r), %(.g), %(.b), %(.a))" }
 
   static BLACK      { Color.new(0.0, 0.0, 0.0, 1.0) }
   static WHITE      { Color.new(1.0, 1.0, 1.0, 1.0) }
@@ -115,7 +114,7 @@ foreign class RectF {
 
   position foreign
   size foreign
-  center foreign
+#   center foreign
 
   contains(x, y) foreign
   contains(other) foreign
@@ -141,15 +140,15 @@ foreign class RectI {
   position foreign
   size foreign
 
-  top_left foreign
-  top_center foreign
-  top_right foreign
-  center_left foreign
-  center foreign
-  center_right foreign
-  bottom_left foreign
-  bottom_center foreign
-  bottom_right foreign
+#   top_left foreign
+#   top_center foreign
+#   top_right foreign
+#   center_left foreign
+#   center foreign
+#   center_right foreign
+#   bottom_left foreign
+#   bottom_center foreign
+#   bottom_right foreign
 
   contains(x, y) foreign
   contains(other) foreign
@@ -158,20 +157,23 @@ foreign class RectI {
 }
 
 foreign class Mat3F {
-  construct new() foreign
+  construct identity() foreign
   construct translation(tx, ty) foreign
   construct rotation(angle) foreign
   construct rotation(angle, center) foreign
   construct scale(sx, sy) foreign
 
-  [i,j] foreign
+  [row,col] foreign
 
   +(other) foreign
   -(other) foreign
   *(other) foreign
 
+  transpose() foreign
   invert() foreign
 
-  transform_point(p) foreign
-  transform_vector(p)
+  transform_point(x, y) foreign
+  transform_point(p) { .transform_point(p.x, p.y) }
+  transform_vector(x, y) foreign
+  transform_vector(v) { .transform_vector(v.x, v.y) }
 }

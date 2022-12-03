@@ -1,6 +1,8 @@
 #ifndef GAMMA_ROOT_H
 #define GAMMA_ROOT_H
 
+#include "agate.h"
+
 struct GammaVec2F {
   float x;
   float y;
@@ -31,5 +33,12 @@ struct GammaRectI {
   int w;
   int h;
 };
+
+struct GammaMat3F {
+  float data[3][3]; // column-major
+};
+
+AgateForeignClassHandler gammaRootClassHandler(AgateVM *vm, const char *unit_name, const char *class_name);
+AgateForeignMethodFunc gammaRootMethodHandler(AgateVM *vm, const char *unit_name, const char *class_name, AgateForeignMethodKind kind, const char *signature);
 
 #endif // GAMMA_ROOT_H

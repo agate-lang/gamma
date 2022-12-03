@@ -35,7 +35,6 @@ static void gammaWindowNew(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
   struct GammaWindow *window = agateSlotGetForeign(vm, 0);
 
-
   const char *title = agateSlotGetString(vm, 1);
   int w = (int) agateSlotGetInt(vm, 2);
   int h = (int) agateSlotGetInt(vm, 3);
@@ -45,7 +44,7 @@ static void gammaWindowNew(AgateVM *vm) {
   window->fullscreen = false;
 }
 
-static void gammaWindowIsOpen(AgateVM *vm) {
+static void gammaWindowOpen(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
   struct GammaWindow *window = agateSlotGetForeign(vm, 0);
   agateSlotSetBool(vm, AGATE_RETURN_SLOT, !window->should_close);
@@ -82,7 +81,7 @@ AgateForeignMethodFunc gammaWindowMethodHandler(AgateVM *vm, const char *unit_na
   if (gammaEquals(class_name, "Window")) {
     if (kind == AGATE_FOREIGN_METHOD_INSTANCE) {
       if (gammaEquals(signature, "init new(_,_,_)")) { return gammaWindowNew; }
-      if (gammaEquals(signature, "is_open")) { return gammaWindowIsOpen; }
+      if (gammaEquals(signature, "open")) { return gammaWindowOpen; }
       if (gammaEquals(signature, "close()")) { return gammaWindowClose; }
     }
   }

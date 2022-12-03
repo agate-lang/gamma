@@ -19,6 +19,8 @@ class Clock {
     @now = Time.now
   }
 
+  elapsed { Time.to_seconds(Time.now - @now) }
+
   restart() {
     def now = Time.now
     def delta = now - @now

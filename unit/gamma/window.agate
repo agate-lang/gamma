@@ -4,6 +4,6 @@
 
 foreign class Window {
   construct new(title, w, h) foreign
-  is_open foreign
+  open foreign
   close() foreign
 }

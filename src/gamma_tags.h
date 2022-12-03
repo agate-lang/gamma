@@ -7,6 +7,7 @@
 #define GAMMA_COLOR_TAG     0x00010003
 #define GAMMA_RECTF_TAG     0x00010004
 #define GAMMA_RECTI_TAG     0x00010005
+#define GAMMA_MAT3F_TAG     0x00010006
 
 // event
 #define GAMMA_EVENT_TAG     0x00020001
