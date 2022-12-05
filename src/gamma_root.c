@@ -43,8 +43,8 @@ static void gammaVec2FUnit(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2F_TAG);
   struct GammaVec2F *vec = agateSlotGetForeign(vm, 0);
   float angle = (float) agateSlotGetFloat(vm, 1);
-  vec->x = cos(angle);
-  vec->y = sin(angle);
+  vec->x = cosf(angle);
+  vec->y = sinf(angle);
 }
 
 static void gammaVec2FGetX(AgateVM *vm) {
@@ -293,10 +293,10 @@ static void gammaColorRgba32(AgateVM *vm) {
 
   int64_t rgba = agateSlotGetInt(vm, 1);
 
-  color->r = ((rgba >>  0) & 0xFF) / 255.0;
-  color->g = ((rgba >>  8) & 0xFF) / 255.0;
-  color->b = ((rgba >> 16) & 0xFF) / 255.0;
-  color->a = ((rgba >> 24) & 0xFF) / 255.0;
+  color->r = ((rgba >>  0) & 0xFF) / 255.0f;
+  color->g = ((rgba >>  8) & 0xFF) / 255.0f;
+  color->b = ((rgba >> 16) & 0xFF) / 255.0f;
+  color->a = ((rgba >> 24) & 0xFF) / 255.0f;
 }
 
 #define GAMMA_COLOR_GET(name, field)                        \
@@ -400,7 +400,7 @@ static void gammaConvertRgbToHsv(struct HSV *hsv, const struct GammaColor *color
     hsv->h = 0.0f;
   }
 
-  hsv->s = (max < FLT_EPSILON ? 0.0 : (1.0 - min / max));
+  hsv->s = (max < FLT_EPSILON ? 0.0f : (1.0f - min / max));
   hsv->v = max;
   hsv->a = color->a;
 }
@@ -817,8 +817,8 @@ static void gammaMat3FRotation1(AgateVM *vm) {
   struct GammaMat3F *mat = agateSlotGetForeign(vm, 0);
 
   float angle = (float) agateSlotGetFloat(vm, 1);
-  float c = cos(angle);
-  float s = sin(angle);
+  float c = cosf(angle);
+  float s = sinf(angle);
 
   mat->data[0][0] =  c ; mat->data[1][0] = -s ; mat->data[2][0] = 0.0;
   mat->data[0][1] =  s ; mat->data[1][1] =  c ; mat->data[2][1] = 0.0;
@@ -834,8 +834,8 @@ static void gammaMat3FRotation2(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 2) == GAMMA_VEC2F_TAG);
   struct GammaVec2F *center = agateSlotGetForeign(vm, 2);
 
-  float c = cos(angle);
-  float s = sin(angle);
+  float c = cosf(angle);
+  float s = sinf(angle);
 
   mat->data[0][0] =  c ; mat->data[1][0] = -s ; mat->data[2][0] = center->x * (1 - c) + center->y * s;
   mat->data[0][1] =  s ; mat->data[1][1] =  c ; mat->data[2][1] = center->y * (1 - c) - center->y * s;

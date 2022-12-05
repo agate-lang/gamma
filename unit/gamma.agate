@@ -9,8 +9,8 @@ foreign class Vec2F {
 
   x foreign
   y foreign
-  x=(val) foreign
-  y=(val) foreign
+  x=(value) foreign
+  y=(value) foreign
 
   + foreign
   - foreign
@@ -30,8 +30,8 @@ foreign class Vec2I {
 
   x foreign
   y foreign
-  x=(val) foreign
-  y=(val) foreign
+  x=(value) foreign
+  y=(value) foreign
 
   + foreign
   - foreign
@@ -47,17 +47,17 @@ foreign class Vec2I {
 
 foreign class Color {
   construct new(r, g, b, a) foreign
-  construct rgba32(val) foreign
+  construct rgba32(value) foreign
 
   r foreign
   g foreign
   b foreign
   a foreign
 
-  r=(val) foreign
-  g=(val) foreign
-  b=(val) foreign
-  a=(val) foreign
+  r=(value) foreign
+  g=(value) foreign
+  b=(value) foreign
+  a=(value) foreign
 
   +(other) foreign
   -(other) foreign
@@ -67,9 +67,9 @@ foreign class Color {
   ==(other) foreign
   !=(other) foreign
 
-  darker(percent) foreign
+  darker(ratio) foreign
   darker() { .darker(0.5) }
-  lighter(percent) foreign
+  lighter(ratio) foreign
   lighter() { .lighter(0.5) }
 
   to_s { "(%(.r), %(.g), %(.b), %(.a))" }
@@ -132,10 +132,10 @@ foreign class RectI {
   w foreign
   h foreign
 
-  x=(val) foreign
-  y=(val) foreign
-  w=(val) foreign
-  h=(val) foreign
+  x=(value) foreign
+  y=(value) foreign
+  w=(value) foreign
+  h=(value) foreign
 
   position foreign
   size foreign
