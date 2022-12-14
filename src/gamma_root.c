@@ -6,7 +6,9 @@
 
 #include <stdio.h>
 
+#include "gamma_check.h"
 #include "gamma_common.h"
+#include "gamma_error.h"
 #include "gamma_tags.h"
 
 /*
@@ -28,47 +30,67 @@ static uint64_t gammaVec2FTag(AgateVM *vm, const char *unit_name, const char *cl
 static void gammaVec2FZero(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2F_TAG);
   struct GammaVec2F *vec = agateSlotGetForeign(vm, 0);
-  vec->x = 0.0f;
-  vec->y = 0.0f;
+  vec->v[0] = 0.0f;
+  vec->v[1] = 0.0f;
 }
 
 static void gammaVec2FNew(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2F_TAG);
   struct GammaVec2F *vec = agateSlotGetForeign(vm, 0);
-  vec->x = (float) agateSlotGetFloat(vm, 1);
-  vec->y = (float) agateSlotGetFloat(vm, 2);
+
+  if (!gammaCheckFloat(vm, 1, &vec->v[0])) {
+    gammaError(vm, "Float parameter expected for `x`.");
+    return;
+  }
+
+  if (!gammaCheckFloat(vm, 2, &vec->v[1])) {
+    gammaError(vm, "Float parameter expected for `y`.");
+    return;
+  }
 }
 
 static void gammaVec2FUnit(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2F_TAG);
   struct GammaVec2F *vec = agateSlotGetForeign(vm, 0);
-  float angle = (float) agateSlotGetFloat(vm, 1);
-  vec->x = cosf(angle);
-  vec->y = sinf(angle);
+  float angle;
+
+  if (!gammaCheckFloat(vm, 1, &angle)) {
+    gammaError(vm, "Float parameter expected for `angle`.");
+    return;
+  }
+
+  vec->v[0] = cosf(angle);
+  vec->v[1] = sinf(angle);
 }
 
 static void gammaVec2FGetX(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2F_TAG);
   struct GammaVec2F *vec = agateSlotGetForeign(vm, 0);
-  agateSlotSetFloat(vm, AGATE_RETURN_SLOT, vec->x);
+  agateSlotSetFloat(vm, AGATE_RETURN_SLOT, vec->v[0]);
 }
 
 static void gammaVec2FGetY(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2F_TAG);
   struct GammaVec2F *vec = agateSlotGetForeign(vm, 0);
-  agateSlotSetFloat(vm, AGATE_RETURN_SLOT, vec->y);
+  agateSlotSetFloat(vm, AGATE_RETURN_SLOT, vec->v[1]);
 }
 
 static void gammaVec2FSetX(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2F_TAG);
   struct GammaVec2F *vec = agateSlotGetForeign(vm, 0);
-  vec->x = (float) agateSlotGetFloat(vm, 1);
+
+  if (!gammaCheckFloat(vm, 1, &vec->v[0])) {
+    gammaError(vm, "Float parameter expected for `value`.");
+  }
 }
 
 static void gammaVec2FSetY(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2F_TAG);
   struct GammaVec2F *vec = agateSlotGetForeign(vm, 0);
-  vec->y = (float) agateSlotGetFloat(vm, 1);
+
+  if (!gammaCheckFloat(vm, 1, &vec->v[1])) {
+    gammaError(vm, "Float parameter expected for `value`.");
+  }
 }
 
 static void gammaVec2FPlus(AgateVM *vm) {
@@ -79,8 +101,8 @@ static void gammaVec2FPlus(AgateVM *vm) {
   agateGetVariable(vm, "gamma", "Vec2F", class_slot);
   struct GammaVec2F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-  result->x = vec->x;
-  result->y = vec->y;
+  result->v[0] = vec->v[0];
+  result->v[1] = vec->v[1];
 }
 
 static void gammaVec2FMinus(AgateVM *vm) {
@@ -91,8 +113,8 @@ static void gammaVec2FMinus(AgateVM *vm) {
   agateGetVariable(vm, "gamma", "Vec2F", class_slot);
   struct GammaVec2F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-  result->x = - vec->x;
-  result->y = - vec->y;
+  result->v[0] = - vec->v[0];
+  result->v[1] = - vec->v[1];
 }
 
 #define GAMMA_VEC2F_OP(name, op)                                \
@@ -102,15 +124,19 @@ static void gammaVec2F ## name(AgateVM *vm) {                   \
   ptrdiff_t class_slot = agateSlotAllocate(vm);                 \
   agateGetVariable(vm, "gamma", "Vec2F", class_slot);           \
   struct GammaVec2F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot); \
-  if (agateSlotType(vm, 1) == AGATE_TYPE_FLOAT) {               \
-    float value = (float) agateSlotGetFloat(vm, 1);             \
-    result->x = vec->x op value;                                \
-    result->y = vec->y op value;                                \
-  } else if (agateSlotType(vm, 1) == AGATE_TYPE_FOREIGN && agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2F_TAG) {  \
-    struct GammaVec2F *other = agateSlotGetForeign(vm, 1);      \
-    result->x = vec->x op other->x;                             \
-    result->y = vec->y op other->y;                             \
+  float value;                                                  \
+  if (gammaCheckFloat(vm, 1, &value)) {                         \
+    result->v[0] = vec->v[0] op value;                          \
+    result->v[1] = vec->v[1] op value;                          \
+    return;                                                     \
   }                                                             \
+  struct GammaVec2F other;                                      \
+  if (gammaCheckVec2F(vm, 1, &other)) {                         \
+    result->v[0] = vec->v[0] op other.v[0];                     \
+    result->v[1] = vec->v[1] op other.v[1];                     \
+    return;                                                     \
+  }                                                             \
+  gammaError(vm, "Float or Vec2F parameter expected for `other`."); \
 }
 
 GAMMA_VEC2F_OP(Add, +)
@@ -121,21 +147,27 @@ GAMMA_VEC2F_OP(Div, /)
 static void gammaVec2FEq(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2F_TAG);
   struct GammaVec2F *vec = agateSlotGetForeign(vm, 0);
+  struct GammaVec2F other;
 
-  assert(agateSlotGetForeignTag(vm, 1) == GAMMA_VEC2F_TAG); // TODO: error
-  struct GammaVec2F *other = agateSlotGetForeign(vm, 1);
+  if (gammaCheckVec2F(vm, 1, &other)) {
+    gammaError(vm, "Vec2F parameter expected for `other`.");
+    return;
+  }
 
-  agateSlotSetBool(vm, AGATE_RETURN_SLOT, vec->x == other->x && vec->y == other->y);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, vec->v[0] == other.v[0] && vec->v[1] == other.v[1]);
 }
 
 static void gammaVec2FNotEq(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2F_TAG);
   struct GammaVec2F *vec = agateSlotGetForeign(vm, 0);
+  struct GammaVec2F other;
 
-  assert(agateSlotGetForeignTag(vm, 1) == GAMMA_VEC2F_TAG); // TODO: error
-  struct GammaVec2F *other = agateSlotGetForeign(vm, 1);
+  if (gammaCheckVec2F(vm, 1, &other)) {
+    gammaError(vm, "Vec2F parameter expected for `other`.");
+    return;
+  }
 
-  agateSlotSetBool(vm, AGATE_RETURN_SLOT, vec->x != other->x || vec->y != other->y);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, vec->v[0] != other.v[0] || vec->v[1] != other.v[1]);
 }
 
 
@@ -158,39 +190,53 @@ static uint64_t gammaVec2ITag(AgateVM *vm, const char *unit_name, const char *cl
 static void gammaVec2IZero(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2I_TAG);
   struct GammaVec2I *vec = agateSlotGetForeign(vm, 0);
-  vec->x = 0;
-  vec->y = 0;
+  vec->v[0] = 0;
+  vec->v[1] = 0;
 }
 
 static void gammaVec2INew(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2I_TAG);
   struct GammaVec2I *vec = agateSlotGetForeign(vm, 0);
-  vec->x = (int) agateSlotGetInt(vm, 1);
-  vec->y = (int) agateSlotGetInt(vm, 2);
+
+  if (!gammaCheckInt(vm, 1, &vec->v[0])) {
+    gammaError(vm, "Int parameter expected for `x`.");
+    return;
+  }
+
+  if (!gammaCheckInt(vm, 2, &vec->v[1])) {
+    gammaError(vm, "Int parameter expected for `y`.");
+    return;
+  }
 }
 
 static void gammaVec2IGetX(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2I_TAG);
   struct GammaVec2I *vec = agateSlotGetForeign(vm, 0);
-  agateSlotSetInt(vm, AGATE_RETURN_SLOT, vec->x);
+  agateSlotSetInt(vm, AGATE_RETURN_SLOT, vec->v[0]);
 }
 
 static void gammaVec2IGetY(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2I_TAG);
   struct GammaVec2I *vec = agateSlotGetForeign(vm, 0);
-  agateSlotSetInt(vm, AGATE_RETURN_SLOT, vec->y);
+  agateSlotSetInt(vm, AGATE_RETURN_SLOT, vec->v[1]);
 }
 
 static void gammaVec2ISetX(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2I_TAG);
   struct GammaVec2I *vec = agateSlotGetForeign(vm, 0);
-  vec->x = (int) agateSlotGetInt(vm, 1);
+
+  if (!gammaCheckInt(vm, 1, &vec->v[0])) {
+    gammaError(vm, "Int parameter expected for `value`.");
+  }
 }
 
 static void gammaVec2ISetY(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2I_TAG);
   struct GammaVec2I *vec = agateSlotGetForeign(vm, 0);
-  vec->y = (int) agateSlotGetInt(vm, 1);
+
+  if (!gammaCheckInt(vm, 1, &vec->v[1])) {
+    gammaError(vm, "Int parameter expected for `value`.");
+  }
 }
 
 static void gammaVec2IPlus(AgateVM *vm) {
@@ -201,8 +247,8 @@ static void gammaVec2IPlus(AgateVM *vm) {
   agateGetVariable(vm, "gamma", "Vec2I", class_slot);
   struct GammaVec2I *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-  result->x = vec->x;
-  result->y = vec->y;
+  result->v[0] = vec->v[0];
+  result->v[1] = vec->v[1];
 }
 
 static void gammaVec2IMinus(AgateVM *vm) {
@@ -213,8 +259,8 @@ static void gammaVec2IMinus(AgateVM *vm) {
   agateGetVariable(vm, "gamma", "Vec2I", class_slot);
   struct GammaVec2I *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-  result->x = - vec->x;
-  result->y = - vec->y;
+  result->v[0] = - vec->v[0];
+  result->v[1] = - vec->v[1];
 }
 
 #define GAMMA_VEC2I_OP(name, op)                                \
@@ -224,15 +270,18 @@ static void gammaVec2I ## name(AgateVM *vm) {                   \
   ptrdiff_t class_slot = agateSlotAllocate(vm);                 \
   agateGetVariable(vm, "gamma", "Vec2I", class_slot);           \
   struct GammaVec2I *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot); \
-  if (agateSlotType(vm, 1) == AGATE_TYPE_FLOAT) {               \
-    int value = (int) agateSlotGetInt(vm, 1);                   \
-    result->x = vec->x op value;                                \
-    result->y = vec->y op value;                                \
-  } else if (agateSlotType(vm, 1) == AGATE_TYPE_FOREIGN && agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2I_TAG) {  \
-    struct GammaVec2I *other = agateSlotGetForeign(vm, 1);      \
-    result->x = vec->x op other->x;                             \
-    result->y = vec->y op other->y;                             \
+  int value;                                                    \
+  if (gammaCheckInt(vm, 1, &value)) {                           \
+    result->v[0] = vec->v[0] op value;                          \
+    result->v[1] = vec->v[1] op value;                          \
+    return;                                                     \
   }                                                             \
+  struct GammaVec2I other;                                      \
+  if (gammaCheckVec2I(vm, 1, &other)) {                         \
+    result->v[0] = vec->v[0] op other.v[0];                     \
+    result->v[1] = vec->v[1] op other.v[1];                     \
+  }                                                             \
+  gammaError(vm, "Int or Vec2I parameter expected for `other`."); \
 }
 
 GAMMA_VEC2I_OP(Add, +)
@@ -243,27 +292,42 @@ GAMMA_VEC2I_OP(Div, /)
 static void gammaVec2IEq(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2I_TAG);
   struct GammaVec2I *vec = agateSlotGetForeign(vm, 0);
+  struct GammaVec2I other;
 
-  assert(agateSlotGetForeignTag(vm, 1) == GAMMA_VEC2I_TAG); // TODO: error
-  struct GammaVec2I *other = agateSlotGetForeign(vm, 1);
+  if (gammaCheckVec2I(vm, 1, &other)) {
+    gammaError(vm, "Vec2I parameter expected for `other`.");
+    return;
+  }
 
-  agateSlotSetBool(vm, AGATE_RETURN_SLOT, vec->x == other->x && vec->y == other->y);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, vec->v[0] == other.v[0] && vec->v[1] == other.v[1]);
 }
 
 static void gammaVec2INotEq(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_VEC2I_TAG);
   struct GammaVec2I *vec = agateSlotGetForeign(vm, 0);
+  struct GammaVec2I other;
 
-  assert(agateSlotGetForeignTag(vm, 1) == GAMMA_VEC2I_TAG); // TODO: error
-  struct GammaVec2I *other = agateSlotGetForeign(vm, 1);
+  if (gammaCheckVec2I(vm, 1, &other)) {
+    gammaError(vm, "Vec2I parameter expected for `other`.");
+    return;
+  }
 
-  agateSlotSetBool(vm, AGATE_RETURN_SLOT, vec->x != other->x || vec->y != other->y);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, vec->v[0] != other.v[0] || vec->v[1] != other.v[1]);
 }
 
 
 /*
  * Color
  */
+
+// raw functions
+
+void gammaColorRawFromRgba(struct GammaColor *color, int64_t rgba) {
+  color->r = ((rgba >>  0) & 0xFF) / 255.0f;
+  color->g = ((rgba >>  8) & 0xFF) / 255.0f;
+  color->b = ((rgba >> 16) & 0xFF) / 255.0f;
+  color->a = ((rgba >> 24) & 0xFF) / 255.0f;
+}
 
 // class
 
@@ -281,22 +345,43 @@ static void gammaColorNew(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_COLOR_TAG);
   struct GammaColor *color = agateSlotGetForeign(vm, 0);
 
-  color->r = gammaClampF((float) agateSlotGetFloat(vm, 1), 0.0f, 1.0f);
-  color->g = gammaClampF((float) agateSlotGetFloat(vm, 2), 0.0f, 1.0f);
-  color->b = gammaClampF((float) agateSlotGetFloat(vm, 3), 0.0f, 1.0f);
-  color->a = gammaClampF((float) agateSlotGetFloat(vm, 4), 0.0f, 1.0f);
+  if (!gammaCheckFloat(vm, 1, &color->r)) {
+    gammaError(vm, "Float parameter expected for `r`.");
+    return;
+  }
+
+  if (!gammaCheckFloat(vm, 2, &color->g)) {
+    gammaError(vm, "Float parameter expected for `g`.");
+    return;
+  }
+
+  if (!gammaCheckFloat(vm, 3, &color->b)) {
+    gammaError(vm, "Float parameter expected for `b`.");
+    return;
+  }
+
+  if (!gammaCheckFloat(vm, 4, &color->a)) {
+    gammaError(vm, "Float parameter expected for `a`.");
+    return;
+  }
+
+  color->r = gammaClampF(color->r, 0.0f, 1.0f);
+  color->g = gammaClampF(color->g, 0.0f, 1.0f);
+  color->b = gammaClampF(color->b, 0.0f, 1.0f);
+  color->a = gammaClampF(color->a, 0.0f, 1.0f);
 }
 
 static void gammaColorRgba32(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_COLOR_TAG);
   struct GammaColor *color = agateSlotGetForeign(vm, 0);
+  int rgba;
 
-  int64_t rgba = agateSlotGetInt(vm, 1);
+  if (!gammaCheckInt(vm, 4, &rgba)) {
+    gammaError(vm, "Int parameter expected for `value`.");
+    return;
+  }
 
-  color->r = ((rgba >>  0) & 0xFF) / 255.0f;
-  color->g = ((rgba >>  8) & 0xFF) / 255.0f;
-  color->b = ((rgba >> 16) & 0xFF) / 255.0f;
-  color->a = ((rgba >> 24) & 0xFF) / 255.0f;
+  gammaColorRawFromRgba(color, rgba);
 }
 
 #define GAMMA_COLOR_GET(name, field)                        \
@@ -311,11 +396,15 @@ GAMMA_COLOR_GET(G, g)
 GAMMA_COLOR_GET(B, b)
 GAMMA_COLOR_GET(A, a)
 
-#define GAMMA_COLOR_SET(name, field)                        \
-static void gammaColorSet ## name(AgateVM *vm) {            \
-  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_COLOR_TAG); \
-  struct GammaColor *color = agateSlotGetForeign(vm, 0);    \
-  color->field = (float) agateSlotGetFloat(vm, 1);          \
+#define GAMMA_COLOR_SET(name, field)                          \
+static void gammaColorSet ## name(AgateVM *vm) {              \
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_COLOR_TAG);   \
+  struct GammaColor *color = agateSlotGetForeign(vm, 0);      \
+  if (!gammaCheckFloat(vm, 1, &color->field)) {               \
+    gammaError(vm, "Float parameter expected for `value`.");  \
+    return;                                                   \
+  }                                                           \
+  agateSlotSetFloat(vm, AGATE_RETURN_SLOT, color->field);     \
 }
 
 GAMMA_COLOR_SET(R, r)
@@ -330,21 +419,23 @@ static void gammaColor ## name(AgateVM *vm) {                   \
   ptrdiff_t class_slot = agateSlotAllocate(vm);                 \
   agateGetVariable(vm, "gamma", "Color", class_slot);           \
   struct GammaColor *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot); \
-  if (agateSlotType(vm, 1) == AGATE_TYPE_FLOAT) {               \
-    float value = (float) agateSlotGetFloat(vm, 1);             \
-    result->r = gammaClampF(color->r op value, 0.0f, 1.0f);     \
-    result->g = gammaClampF(color->g op value, 0.0f, 1.0f);     \
-    result->b = gammaClampF(color->b op value, 0.0f, 1.0f);     \
-    result->a = gammaClampF(color->a op value, 0.0f, 1.0f);     \
-  } else if (agateSlotType(vm, 1) == AGATE_TYPE_FOREIGN && agateSlotGetForeignTag(vm, 0) == GAMMA_COLOR_TAG) {  \
-    struct GammaColor *other = agateSlotGetForeign(vm, 1);      \
-    result->r = gammaClampF(color->r op other->r, 0.0f, 1.0f);  \
-    result->g = gammaClampF(color->g op other->g, 0.0f, 1.0f);  \
-    result->b = gammaClampF(color->b op other->b, 0.0f, 1.0f);  \
-    result->a = gammaClampF(color->a op other->a, 0.0f, 1.0f);  \
+  float value;                                                  \
+  if (gammaCheckFloat(vm, 1, &value)) {                         \
+    result->r = color->r op value;                              \
+    result->g = color->g op value;                              \
+    result->b = color->b op value;                              \
+    result->a = color->a op value;                              \
+    return;                                                     \
   }                                                             \
+  struct GammaColor other;                                      \
+  if (gammaCheckColor(vm, 1, &other)) {                         \
+    result->r = color->r op other.r;                            \
+    result->g = color->g op other.g;                            \
+    result->b = color->b op other.b;                            \
+    result->a = color->a op other.a;                            \
+  }                                                             \
+  gammaError(vm, "Float or Color parameter expected for `other`."); \
 }
-// TODO: error in the last case
 
 GAMMA_COLOR_OP(Add, +)
 GAMMA_COLOR_OP(Sub, -)
@@ -354,21 +445,27 @@ GAMMA_COLOR_OP(Div, /)
 static void gammaColorEq(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_COLOR_TAG);
   struct GammaColor *color = agateSlotGetForeign(vm, 0);
+  struct GammaColor other;
 
-  assert(agateSlotGetForeignTag(vm, 1) == GAMMA_COLOR_TAG); // TODO: error
-  struct GammaColor *other = agateSlotGetForeign(vm, 1);
+  if (gammaCheckColor(vm, 1, &other)) {
+    gammaError(vm, "Color parameter expected for `other`.");
+    return;
+  }
 
-  agateSlotSetBool(vm, AGATE_RETURN_SLOT, color->r == other->r && color->g == other->g && color->b == other->b && color->a == other->a);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, color->r == other.r && color->g == other.g && color->b == other.b && color->a == other.a);
 }
 
 static void gammaColorNotEq(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_COLOR_TAG);
   struct GammaColor *color = agateSlotGetForeign(vm, 0);
+  struct GammaColor other;
 
-  assert(agateSlotGetForeignTag(vm, 1) == GAMMA_COLOR_TAG); // TODO: error
-  struct GammaColor *other = agateSlotGetForeign(vm, 1);
+  if (gammaCheckColor(vm, 1, &other)) {
+    gammaError(vm, "Color parameter expected for `other`.");
+    return;
+  }
 
-  agateSlotSetBool(vm, AGATE_RETURN_SLOT, color->r != other->r || color->g != other->g || color->b != other->b || color->a != other->a);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, color->r != other.r || color->g != other.g || color->b != other.b || color->a != other.a);
 }
 
 struct HSV {
@@ -434,7 +531,12 @@ static void gammaConvertHsvToRgb(struct GammaColor *color, const struct HSV *hsv
 static void gammaColorDarker(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_COLOR_TAG);
   struct GammaColor *color = agateSlotGetForeign(vm, 0);
-  float percent = (float) agateSlotGetFloat(vm, 1);
+  float ratio;
+
+  if (!gammaCheckFloat(vm, 1, &ratio)) {
+    gammaError(vm, "Float parameter expected for `ratio`.");
+    return;
+  }
 
   ptrdiff_t class_slot = agateSlotAllocate(vm);
   agateGetVariable(vm, "gamma", "Color", class_slot);
@@ -442,14 +544,19 @@ static void gammaColorDarker(AgateVM *vm) {
 
   struct HSV hsv;
   gammaConvertRgbToHsv(&hsv, color);
-  hsv.v -= hsv.v * percent;
+  hsv.v -= hsv.v * ratio;
   gammaConvertHsvToRgb(result, &hsv);
 }
 
 static void gammaColorLighter(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_COLOR_TAG);
   struct GammaColor *color = agateSlotGetForeign(vm, 0);
-  float percent = (float) agateSlotGetFloat(vm, 1);
+  float ratio;
+
+  if (!gammaCheckFloat(vm, 1, &ratio)) {
+    gammaError(vm, "Float parameter expected for `ratio`.");
+    return;
+  }
 
   ptrdiff_t class_slot = agateSlotAllocate(vm);
   agateGetVariable(vm, "gamma", "Color", class_slot);
@@ -457,7 +564,7 @@ static void gammaColorLighter(AgateVM *vm) {
 
   struct HSV hsv;
   gammaConvertRgbToHsv(&hsv, color);
-  hsv.v += hsv.v * percent;
+  hsv.v += hsv.v * ratio;
 
   if (hsv.v > 1) {
     hsv.s -= (hsv.v - 1);
@@ -472,9 +579,54 @@ static void gammaColorLighter(AgateVM *vm) {
   gammaConvertHsvToRgb(result, &hsv);
 }
 
+static void gammaColorNormalize(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_COLOR_TAG);
+  struct GammaColor *color = agateSlotGetForeign(vm, 0);
+
+  color->r = gammaClampF(color->r, 0.0f, 1.0f);
+  color->g = gammaClampF(color->g, 0.0f, 1.0f);
+  color->b = gammaClampF(color->b, 0.0f, 1.0f);
+  color->a = gammaClampF(color->a, 0.0f, 1.0f);
+}
+
+static void gammaColorLerp(AgateVM *vm) {
+  struct GammaColor color0;
+
+  if (gammaCheckColor(vm, 1, &color0)) {
+    gammaError(vm, "Color parameter expected for `color0`.");
+    return;
+  }
+
+  struct GammaColor color1;
+
+  if (gammaCheckColor(vm, 2, &color1)) {
+    gammaError(vm, "Color parameter expected for `color1`.");
+    return;
+  }
+
+  float ratio;
+
+  if (!gammaCheckFloat(vm, 3, &ratio)) {
+    gammaError(vm, "Float parameter expected for `ratio`.");
+    return;
+  }
+
+  ptrdiff_t class_slot = agateSlotAllocate(vm);
+  agateGetVariable(vm, "gamma", "Color", class_slot);
+  struct GammaColor *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
+
+  result->r = color0.r * (1.0f - ratio) + color1.r * ratio;
+  result->g = color0.g * (1.0f - ratio) + color1.g * ratio;
+  result->b = color0.b * (1.0f - ratio) + color1.b * ratio;
+  result->a = color0.a * (1.0f - ratio) + color1.a * ratio;
+}
+
 /*
  * RectF
  */
+
+// raw functions
+
 
 // class
 
@@ -492,39 +644,53 @@ static void gammaRectFNew4(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG);
   struct GammaRectF *rect = agateSlotGetForeign(vm, 0);
 
-  rect->x = (float) agateSlotGetFloat(vm, 1);
-  rect->y = (float) agateSlotGetFloat(vm, 2);
-  rect->w = (float) agateSlotGetFloat(vm, 3);
-  rect->h = (float) agateSlotGetFloat(vm, 4);
+  if (!gammaCheckFloat(vm, 1, &rect->position.v[0])) {
+    gammaError(vm, "Float parameter expected for `x`.");
+    return;
+  }
+
+  if (!gammaCheckFloat(vm, 2, &rect->position.v[1])) {
+    gammaError(vm, "Float parameter expected for `y`.");
+    return;
+  }
+
+  if (!gammaCheckFloat(vm, 3, &rect->size.v[0])) {
+    gammaError(vm, "Float parameter expected for `w`.");
+    return;
+  }
+
+  if (!gammaCheckFloat(vm, 4, &rect->size.v[1])) {
+    gammaError(vm, "Float parameter expected for `h`.");
+    return;
+  }
 }
 
 static void gammaRectFNew2(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG);
   struct GammaRectF *rect = agateSlotGetForeign(vm, 0);
 
-  assert(agateSlotGetForeignTag(vm, 1) == GAMMA_VEC2F_TAG);
-  struct GammaVec2F *position = agateSlotGetForeign(vm, 1);
+  if (!gammaCheckVec2F(vm, 1, &rect->position)) {
+    gammaError(vm, "Vec2F parameter expected for `position`.");
+    return;
+  }
 
-  assert(agateSlotGetForeignTag(vm, 2) == GAMMA_VEC2F_TAG);
-  struct GammaVec2F *size = agateSlotGetForeign(vm, 2);
-
-  rect->x = position->x;
-  rect->y = position->y;
-  rect->w = size->x;
-  rect->h = size->y;
+  if (!gammaCheckVec2F(vm, 1, &rect->size)) {
+    gammaError(vm, "Vec2F parameter expected for `size`.");
+    return;
+  }
 }
 
 static void gammaRectFNew1(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG);
   struct GammaRectF *rect = agateSlotGetForeign(vm, 0);
 
-  assert(agateSlotGetForeignTag(vm, 1) == GAMMA_VEC2F_TAG);
-  struct GammaVec2F *size = agateSlotGetForeign(vm, 1);
+  if (!gammaCheckVec2F(vm, 1, &rect->size)) {
+    gammaError(vm, "Vec2F parameter expected for `size`.");
+    return;
+  }
 
-  rect->x = 0.0f;
-  rect->y = 0.0f;
-  rect->w = size->x;
-  rect->h = size->y;
+  rect->position.v[0] = 0.0f;
+  rect->position.v[1] = 0.0f;
 }
 
 #define GAMMA_RECTF_GET(name, field)                        \
@@ -534,24 +700,28 @@ static void gammaRectFGet ## name(AgateVM *vm) {            \
   agateSlotSetFloat(vm, AGATE_RETURN_SLOT, rect->field);    \
 }
 
-GAMMA_RECTF_GET(X, x)
-GAMMA_RECTF_GET(Y, y)
-GAMMA_RECTF_GET(W, w)
-GAMMA_RECTF_GET(H, h)
+GAMMA_RECTF_GET(X, position.v[0])
+GAMMA_RECTF_GET(Y, position.v[1])
+GAMMA_RECTF_GET(W, size.v[0])
+GAMMA_RECTF_GET(H, size.v[1])
 
-#define GAMMA_RECTF_SET(name, field)                        \
-static void gammaRectFSet ## name(AgateVM *vm) {            \
-  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG); \
-  struct GammaRectF *rect = agateSlotGetForeign(vm, 0);     \
-  rect->field = (float) agateSlotGetFloat(vm, 1);           \
+#define GAMMA_RECTF_SET(name, field)                          \
+static void gammaRectFSet ## name(AgateVM *vm) {              \
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG);   \
+  struct GammaRectF *rect = agateSlotGetForeign(vm, 0);       \
+  if (!gammaCheckFloat(vm, 1, &rect->field)) {                \
+    gammaError(vm, "Float parameter expected for `value`.");  \
+    return;                                                   \
+  }                                                           \
+  agateSlotSetFloat(vm, AGATE_RETURN_SLOT, rect->field);      \
 }
 
-GAMMA_RECTF_SET(X, x)
-GAMMA_RECTF_SET(Y, y)
-GAMMA_RECTF_SET(W, w)
-GAMMA_RECTF_SET(H, h)
+GAMMA_RECTF_SET(X, position.v[0])
+GAMMA_RECTF_SET(Y, position.v[1])
+GAMMA_RECTF_SET(W, size.v[0])
+GAMMA_RECTF_SET(H, size.v[1])
 
-static void gammaRectFPosition(AgateVM *vm) {
+static void gammaRectFGetPosition(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG);
   struct GammaRectF *rect = agateSlotGetForeign(vm, 0);
 
@@ -559,11 +729,10 @@ static void gammaRectFPosition(AgateVM *vm) {
   agateGetVariable(vm, "gamma", "Vec2F", class_slot);
   struct GammaVec2F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-  result->x = rect->x;
-  result->y = rect->y;
+  *result = rect->position;
 }
 
-static void gammaRectFSize(AgateVM *vm) {
+static void gammaRectFGetSize(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG);
   struct GammaRectF *rect = agateSlotGetForeign(vm, 0);
 
@@ -571,56 +740,77 @@ static void gammaRectFSize(AgateVM *vm) {
   agateGetVariable(vm, "gamma", "Vec2F", class_slot);
   struct GammaVec2F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-  result->x = rect->w;
-  result->y = rect->h;
+  *result = rect->size;
 }
 
-static void gammaRectFContains2(AgateVM *vm) {
+static void gammaRectFSetPosition(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG);
   struct GammaRectF *rect = agateSlotGetForeign(vm, 0);
 
-  float x = (float) agateSlotGetFloat(vm, 1);
-  float y = (float) agateSlotGetFloat(vm, 2);
-
-  agateSlotSetBool(vm, AGATE_RETURN_SLOT, rect->x <= x && x < rect->x + rect->w && rect->y <= y && y <= rect->y + rect->h);
-}
-
-static void gammaRectFContains1(AgateVM *vm) {
-  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG);
-  struct GammaRectF *rect = agateSlotGetForeign(vm, 0);
-
-  if (agateSlotType(vm, 1) == AGATE_TYPE_FOREIGN) {
-    switch (agateSlotGetForeignTag(vm, 1)) {
-      case GAMMA_VEC2F_TAG:
-      {
-        struct GammaVec2F *vec = agateSlotGetForeign(vm, 1);
-        agateSlotSetBool(vm, AGATE_RETURN_SLOT, rect->x <= vec->x && vec->x < rect->x + rect->w && rect->y <= vec->y && vec->y <= rect->y + rect->h);
-        break;
-      }
-
-      case GAMMA_RECTF_TAG:
-      {
-        struct GammaRectF *other = agateSlotGetForeign(vm, 1);
-        agateSlotSetBool(vm, AGATE_RETURN_SLOT, rect->x <= other->x && other->x + + other->w <= rect->x + rect->w && rect->y <= other->y && other->y + other->h <= rect->y + rect->h);
-        break;
-      }
-
-      default:
-        // TODO: error
-        agateSlotSetNil(vm, AGATE_RETURN_SLOT);
-        break;
-    }
+  if (!gammaCheckVec2F(vm, 1, &rect->position)) {
+    gammaError(vm, "Vec2F parameter expected for `position`.");
+    return;
   }
+
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaRectFSetSize(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG);
+  struct GammaRectF *rect = agateSlotGetForeign(vm, 0);
+
+  if (!gammaCheckVec2F(vm, 1, &rect->size)) {
+    gammaError(vm, "Vec2F parameter expected for `size`.");
+    return;
+  }
+
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaRectFContains(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG);
+  struct GammaRectF *rect = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2F vec;
+
+  if (gammaCheckVec2F(vm, 1, &vec)) {
+    agateSlotSetBool(vm, AGATE_RETURN_SLOT,
+        rect->position.v[0] <= vec.v[0] && vec.v[0] < rect->position.v[0] + rect->size.v[0]
+     && rect->position.v[1] <= vec.v[1] && vec.v[1] < rect->position.v[1] + rect->size.v[1]
+    );
+    return;
+  }
+
+  struct GammaRectF other;
+
+  if (gammaCheckRectF(vm, 1, &other)) {
+    agateSlotSetBool(vm, AGATE_RETURN_SLOT,
+        rect->position.v[0] <= other.position.v[0] && other.position.v[0] + other.size.v[0] <= rect->position.v[0] + rect->size.v[0]
+     && rect->position.v[1] <= other.position.v[1] && other.position.v[1] + other.size.v[1] <= rect->position.v[1] + rect->size.v[1]
+    );
+    return;
+  }
+
+  agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+  gammaError(vm, "Vec2F or RectF parameter expected for `other`.");
 }
 
 static void gammaRectFIntersects(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTF_TAG);
   struct GammaRectF *rect = agateSlotGetForeign(vm, 0);
 
-  if (agateSlotType(vm, 1) == AGATE_TYPE_FOREIGN && agateSlotGetForeignTag(vm, 1) == GAMMA_RECTF_TAG) {
-    struct GammaRectF *other = agateSlotGetForeign(vm, 1);
-    agateSlotSetBool(vm, AGATE_RETURN_SLOT, rect->x < other->x + other->w && other->x < rect->x + rect->w && rect->y < other->y + other->h && other->y < rect->y + rect->h);
+  struct GammaRectF other;
+
+  if (gammaCheckRectF(vm, 1, &other)) {
+    agateSlotSetBool(vm, AGATE_RETURN_SLOT,
+        rect->position.v[0] < other.position.v[0] + other.size.v[0] && other.position.v[0] < rect->position.v[0] + rect->size.v[0]
+     && rect->position.v[1] < other.position.v[1] + other.size.v[1] && other.position.v[1] < rect->position.v[1] + rect->size.v[1]
+    );
+    return;
   }
+
+  agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+  gammaError(vm, "RectF parameter expected for `other`.");
 }
 
 
@@ -644,39 +834,53 @@ static void gammaRectINew4(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTI_TAG);
   struct GammaRectI *rect = agateSlotGetForeign(vm, 0);
 
-  rect->x = (int) agateSlotGetInt(vm, 1);
-  rect->y = (int) agateSlotGetInt(vm, 2);
-  rect->w = (int) agateSlotGetInt(vm, 3);
-  rect->h = (int) agateSlotGetInt(vm, 4);
+  if (!gammaCheckInt(vm, 1, &rect->position.v[0])) {
+    gammaError(vm, "Int parameter expected for `x`.");
+    return;
+  }
+
+  if (!gammaCheckInt(vm, 2, &rect->position.v[1])) {
+    gammaError(vm, "Int parameter expected for `y`.");
+    return;
+  }
+
+  if (!gammaCheckInt(vm, 3, &rect->size.v[0])) {
+    gammaError(vm, "Int parameter expected for `w`.");
+    return;
+  }
+
+  if (!gammaCheckInt(vm, 4, &rect->size.v[1])) {
+    gammaError(vm, "Int parameter expected for `h`.");
+    return;
+  }
 }
 
 static void gammaRectINew2(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTI_TAG);
   struct GammaRectI *rect = agateSlotGetForeign(vm, 0);
 
-  assert(agateSlotGetForeignTag(vm, 1) == GAMMA_VEC2I_TAG);
-  struct GammaVec2I *position = agateSlotGetForeign(vm, 1);
+  if (!gammaCheckVec2I(vm, 1, &rect->position)) {
+    gammaError(vm, "Vec2I parameter expected for `position`.");
+    return;
+  }
 
-  assert(agateSlotGetForeignTag(vm, 2) == GAMMA_VEC2I_TAG);
-  struct GammaVec2I *size = agateSlotGetForeign(vm, 2);
-
-  rect->x = position->x;
-  rect->y = position->y;
-  rect->w = size->x;
-  rect->h = size->y;
+  if (!gammaCheckVec2I(vm, 1, &rect->size)) {
+    gammaError(vm, "Vec2I parameter expected for `size`.");
+    return;
+  }
 }
 
 static void gammaRectINew1(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTI_TAG);
   struct GammaRectI *rect = agateSlotGetForeign(vm, 0);
 
-  assert(agateSlotGetForeignTag(vm, 1) == GAMMA_VEC2I_TAG);
-  struct GammaVec2I *size = agateSlotGetForeign(vm, 1);
+  if (!gammaCheckVec2I(vm, 1, &rect->size)) {
+    gammaError(vm, "Vec2I parameter expected for `size`.");
+    return;
+  }
 
-  rect->x = 0;
-  rect->y = 0;
-  rect->w = size->x;
-  rect->h = size->y;
+  rect->position.v[0] = 0;
+  rect->position.v[1] = 0;
 }
 
 #define GAMMA_RECTI_GET(name, field)                        \
@@ -686,24 +890,28 @@ static void gammaRectIGet ## name(AgateVM *vm) {            \
   agateSlotSetInt(vm, AGATE_RETURN_SLOT, rect->field);      \
 }
 
-GAMMA_RECTI_GET(X, x)
-GAMMA_RECTI_GET(Y, y)
-GAMMA_RECTI_GET(W, w)
-GAMMA_RECTI_GET(H, h)
+GAMMA_RECTI_GET(X, position.v[0])
+GAMMA_RECTI_GET(Y, position.v[1])
+GAMMA_RECTI_GET(W, size.v[0])
+GAMMA_RECTI_GET(H, size.v[1])
 
 #define GAMMA_RECTI_SET(name, field)                        \
 static void gammaRectISet ## name(AgateVM *vm) {            \
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTI_TAG); \
   struct GammaRectI *rect = agateSlotGetForeign(vm, 0);     \
-  rect->field = (int) agateSlotGetFloat(vm, 1);             \
+  if (!gammaCheckInt(vm, 1, &rect->field)) {                \
+    gammaError(vm, "Int parameter expected for `value`.");  \
+    return;                                                 \
+  }                                                         \
+  agateSlotSetInt(vm, AGATE_RETURN_SLOT, rect->field);      \
 }
 
-GAMMA_RECTI_SET(X, x)
-GAMMA_RECTI_SET(Y, y)
-GAMMA_RECTI_SET(W, w)
-GAMMA_RECTI_SET(H, h)
+GAMMA_RECTI_SET(X, position.v[0])
+GAMMA_RECTI_SET(Y, position.v[1])
+GAMMA_RECTI_SET(W, size.v[0])
+GAMMA_RECTI_SET(H, size.v[1])
 
-static void gammaRectIPosition(AgateVM *vm) {
+static void gammaRectIGetPosition(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTI_TAG);
   struct GammaRectI *rect = agateSlotGetForeign(vm, 0);
 
@@ -711,11 +919,10 @@ static void gammaRectIPosition(AgateVM *vm) {
   agateGetVariable(vm, "gamma", "Vec2I", class_slot);
   struct GammaVec2I *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-  result->x = rect->x;
-  result->y = rect->y;
+  *result = rect->position;
 }
 
-static void gammaRectISize(AgateVM *vm) {
+static void gammaRectIGetSize(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTI_TAG);
   struct GammaRectI *rect = agateSlotGetForeign(vm, 0);
 
@@ -723,61 +930,104 @@ static void gammaRectISize(AgateVM *vm) {
   agateGetVariable(vm, "gamma", "Vec2I", class_slot);
   struct GammaVec2I *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-  result->x = rect->w;
-  result->y = rect->h;
+  *result = rect->size;
 }
 
-static void gammaRectIContains2(AgateVM *vm) {
+static void gammaRectISetPosition(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTI_TAG);
   struct GammaRectI *rect = agateSlotGetForeign(vm, 0);
 
-  int x = (int) agateSlotGetFloat(vm, 1);
-  int y = (int) agateSlotGetFloat(vm, 2);
-
-  agateSlotSetBool(vm, AGATE_RETURN_SLOT, rect->x <= x && x < rect->x + rect->w && rect->y <= y && y <= rect->y + rect->h);
-}
-
-static void gammaRectIContains1(AgateVM *vm) {
-  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTI_TAG);
-  struct GammaRectI *rect = agateSlotGetForeign(vm, 0);
-
-  if (agateSlotType(vm, 1) == AGATE_TYPE_FOREIGN) {
-    switch (agateSlotGetForeignTag(vm, 1)) {
-      case GAMMA_VEC2I_TAG:
-      {
-        struct GammaVec2I *vec = agateSlotGetForeign(vm, 1);
-        agateSlotSetBool(vm, AGATE_RETURN_SLOT, rect->x <= vec->x && vec->x < rect->x + rect->w && rect->y <= vec->y && vec->y <= rect->y + rect->h);
-        break;
-      }
-
-      case GAMMA_RECTI_TAG:
-      {
-        struct GammaRectI *other = agateSlotGetForeign(vm, 1);
-        agateSlotSetBool(vm, AGATE_RETURN_SLOT, rect->x <= other->x && other->x + + other->w <= rect->x + rect->w && rect->y <= other->y && other->y + other->h <= rect->y + rect->h);
-        break;
-      }
-
-      default:
-        // TODO: error
-        agateSlotSetNil(vm, AGATE_RETURN_SLOT);
-        break;
-    }
+  if (!gammaCheckVec2I(vm, 1, &rect->position)) {
+    gammaError(vm, "Vec2I parameter expected for `position`.");
+    return;
   }
+
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaRectISetSize(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTI_TAG);
+  struct GammaRectI *rect = agateSlotGetForeign(vm, 0);
+
+  if (!gammaCheckVec2I(vm, 1, &rect->size)) {
+    gammaError(vm, "Vec2I parameter expected for `size`.");
+    return;
+  }
+
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaRectIContains(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTI_TAG);
+  struct GammaRectI *rect = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2I vec;
+
+  if (gammaCheckVec2I(vm, 1, &vec)) {
+    agateSlotSetBool(vm, AGATE_RETURN_SLOT,
+        rect->position.v[0] <= vec.v[0] && vec.v[0] < rect->position.v[0] + rect->size.v[0]
+     && rect->position.v[1] <= vec.v[1] && vec.v[1] < rect->position.v[1] + rect->size.v[1]
+    );
+    return;
+  }
+
+  struct GammaRectI other;
+
+  if (gammaCheckRectI(vm, 1, &other)) {
+    agateSlotSetBool(vm, AGATE_RETURN_SLOT,
+        rect->position.v[0] <= other.position.v[0] && other.position.v[0] + other.size.v[0] <= rect->position.v[0] + rect->size.v[0]
+     && rect->position.v[1] <= other.position.v[1] && other.position.v[1] + other.size.v[1] <= rect->position.v[1] + rect->size.v[1]
+    );
+    return;
+  }
+
+  agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+  gammaError(vm, "Vec2I or RectI parameter expected for `other`.");
 }
 
 static void gammaRectIIntersects(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_RECTI_TAG);
   struct GammaRectI *rect = agateSlotGetForeign(vm, 0);
 
-  if (agateSlotType(vm, 1) == AGATE_TYPE_FOREIGN && agateSlotGetForeignTag(vm, 1) == GAMMA_RECTI_TAG) {
-    struct GammaRectI *other = agateSlotGetForeign(vm, 1);
-    agateSlotSetBool(vm, AGATE_RETURN_SLOT, rect->x < other->x + other->w && other->x < rect->x + rect->w && rect->y < other->y + other->h && other->y < rect->y + rect->h);
+  struct GammaRectI other;
+
+  if (gammaCheckRectI(vm, 1, &other)) {
+    agateSlotSetBool(vm, AGATE_RETURN_SLOT,
+        rect->position.v[0] < other.position.v[0] + other.size.v[0] && other.position.v[0] < rect->position.v[0] + rect->size.v[0]
+     && rect->position.v[1] < other.position.v[1] + other.size.v[1] && other.position.v[1] < rect->position.v[1] + rect->size.v[1]
+    );
+    return;
   }
+
+  agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+  gammaError(vm, "RectI parameter expected for `other`.");
 }
 
 /*
  * Mat3F
  */
+
+// raw functions
+
+void gammaMat3FRawTranslation(struct GammaMat3F *mat, struct GammaVec2F offset) {
+  mat->m[0][0] = 1.0; mat->m[1][0] = 0.0; mat->m[2][0] = offset.v[0];
+  mat->m[0][1] = 0.0; mat->m[1][1] = 1.0; mat->m[2][1] = offset.v[1];
+  mat->m[0][2] = 0.0; mat->m[1][2] = 0.0; mat->m[2][2] = 1.0;
+}
+
+void gammaMat3FRawMul(struct GammaMat3F *result, struct GammaMat3F *lhs, struct GammaMat3F *rhs) {
+  for (int col = 0; col < 3; ++col) {
+    for (int row = 0; row < 3; ++row) {
+      float sum = 0.0f;
+
+      for (int k = 0; k < 3; ++k) {
+        sum += lhs->m[k][row] * rhs->m[col][k];
+      }
+
+      result->m[col][row] = sum;
+    }
+  }
+}
 
 // class
 
@@ -795,72 +1045,138 @@ static void gammaMat3FIdentity(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_MAT3F_TAG);
   struct GammaMat3F *mat = agateSlotGetForeign(vm, 0);
 
-  mat->data[0][0] = 1.0; mat->data[1][0] = 0.0; mat->data[2][0] = 0.0;
-  mat->data[0][1] = 0.0; mat->data[1][1] = 1.0; mat->data[2][1] = 0.0;
-  mat->data[0][2] = 0.0; mat->data[1][2] = 0.0; mat->data[2][2] = 1.0;
+  mat->m[0][0] = 1.0; mat->m[1][0] = 0.0; mat->m[2][0] = 0.0;
+  mat->m[0][1] = 0.0; mat->m[1][1] = 1.0; mat->m[2][1] = 0.0;
+  mat->m[0][2] = 0.0; mat->m[1][2] = 0.0; mat->m[2][2] = 1.0;
 }
 
 static void gammaMat3FTranslation(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_MAT3F_TAG);
   struct GammaMat3F *mat = agateSlotGetForeign(vm, 0);
 
-  float tx = (float) agateSlotGetFloat(vm, 1);
-  float ty = (float) agateSlotGetFloat(vm, 2);
+  float tx;
 
-  mat->data[0][0] = 1.0; mat->data[1][0] = 0.0; mat->data[2][0] = tx;
-  mat->data[0][1] = 0.0; mat->data[1][1] = 1.0; mat->data[2][1] = ty;
-  mat->data[0][2] = 0.0; mat->data[1][2] = 0.0; mat->data[2][2] = 1.0;
+  if (!gammaCheckFloat(vm, 1, &tx)) {
+    gammaError(vm, "Float parameter expected for `tx`.");
+    return;
+  }
+
+  float ty;
+
+  if (!gammaCheckFloat(vm, 2, &ty)) {
+    gammaError(vm, "Float parameter expected for `ty`.");
+    return;
+  }
+
+  mat->m[0][0] = 1.0; mat->m[1][0] = 0.0; mat->m[2][0] = tx;
+  mat->m[0][1] = 0.0; mat->m[1][1] = 1.0; mat->m[2][1] = ty;
+  mat->m[0][2] = 0.0; mat->m[1][2] = 0.0; mat->m[2][2] = 1.0;
 }
 
 static void gammaMat3FRotation1(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_MAT3F_TAG);
   struct GammaMat3F *mat = agateSlotGetForeign(vm, 0);
 
-  float angle = (float) agateSlotGetFloat(vm, 1);
+  float angle;
+
+  if (!gammaCheckFloat(vm, 1, &angle)) {
+    gammaError(vm, "Float parameter expected for `angle`.");
+    return;
+  }
+
   float c = cosf(angle);
   float s = sinf(angle);
 
-  mat->data[0][0] =  c ; mat->data[1][0] = -s ; mat->data[2][0] = 0.0;
-  mat->data[0][1] =  s ; mat->data[1][1] =  c ; mat->data[2][1] = 0.0;
-  mat->data[0][2] = 0.0; mat->data[1][2] = 0.0; mat->data[2][2] = 1.0;
+  mat->m[0][0] =  c ; mat->m[1][0] = -s ; mat->m[2][0] = 0.0;
+  mat->m[0][1] =  s ; mat->m[1][1] =  c ; mat->m[2][1] = 0.0;
+  mat->m[0][2] = 0.0; mat->m[1][2] = 0.0; mat->m[2][2] = 1.0;
 }
 
-static void gammaMat3FRotation2(AgateVM *vm) {
+static void gammaMat3FRotation3(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_MAT3F_TAG);
   struct GammaMat3F *mat = agateSlotGetForeign(vm, 0);
 
-  float angle = (float) agateSlotGetFloat(vm, 1);
+  float angle;
 
-  assert(agateSlotGetForeignTag(vm, 2) == GAMMA_VEC2F_TAG);
-  struct GammaVec2F *center = agateSlotGetForeign(vm, 2);
+  if (!gammaCheckFloat(vm, 1, &angle)) {
+    gammaError(vm, "Float parameter expected for `angle`.");
+    return;
+  }
 
-  float c = cosf(angle);
-  float s = sinf(angle);
+  float cx;
 
-  mat->data[0][0] =  c ; mat->data[1][0] = -s ; mat->data[2][0] = center->x * (1 - c) + center->y * s;
-  mat->data[0][1] =  s ; mat->data[1][1] =  c ; mat->data[2][1] = center->y * (1 - c) - center->y * s;
-  mat->data[0][2] = 0.0; mat->data[1][2] = 0.0; mat->data[2][2] = 1.0;
+  if (!gammaCheckFloat(vm, 2, &cx)) {
+    gammaError(vm, "Float parameter expected for `cx`.");
+    return;
+  }
+
+  float cy;
+
+  if (!gammaCheckFloat(vm, 3, &cy)) {
+    gammaError(vm, "Float parameter expected for `cy`.");
+    return;
+  }
+
+  float cos_v = cosf(angle);
+  float sin_v = sinf(angle);
+
+  mat->m[0][0] = cos_v; mat->m[1][0] = -sin_v; mat->m[2][0] = cx * (1 - cos_v) + cy * sin_v;
+  mat->m[0][1] = sin_v; mat->m[1][1] =  cos_v; mat->m[2][1] = cy * (1 - cos_v) - cy * sin_v;
+  mat->m[0][2] =   0.0; mat->m[1][2] =    0.0; mat->m[2][2] = 1.0;
 }
 
 static void gammaMat3FScale(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_MAT3F_TAG);
   struct GammaMat3F *mat = agateSlotGetForeign(vm, 0);
 
-  float sx = (float) agateSlotGetFloat(vm, 1);
-  float sy = (float) agateSlotGetFloat(vm, 2);
+  float sx;
 
-  mat->data[0][0] =  sx; mat->data[1][0] = 0.0; mat->data[2][0] = 0.0;
-  mat->data[0][1] = 0.0; mat->data[1][1] =  sy; mat->data[2][1] = 0.0;
-  mat->data[0][2] = 0.0; mat->data[1][2] = 0.0; mat->data[2][2] = 1.0;
+  if (!gammaCheckFloat(vm, 1, &sx)) {
+    gammaError(vm, "Float parameter expected for `sx`.");
+    return;
+  }
+
+  float sy;
+
+  if (!gammaCheckFloat(vm, 2, &sy)) {
+    gammaError(vm, "Float parameter expected for `sy`.");
+    return;
+  }
+
+  mat->m[0][0] =  sx; mat->m[1][0] = 0.0; mat->m[2][0] = 0.0;
+  mat->m[0][1] = 0.0; mat->m[1][1] =  sy; mat->m[2][1] = 0.0;
+  mat->m[0][2] = 0.0; mat->m[1][2] = 0.0; mat->m[2][2] = 1.0;
 }
 
 static void gammaMat3FSubscript(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_MAT3F_TAG);
   struct GammaMat3F *mat = agateSlotGetForeign(vm, 0);
 
-  int64_t row = agateSlotGetInt(vm, 1);
-  int64_t col = agateSlotGetInt(vm, 2);
-  agateSlotSetFloat(vm, AGATE_RETURN_SLOT, mat->data[col][row]);
+  int row;
+
+  if (!gammaCheckInt(vm, 1, &row)) {
+    gammaError(vm, "Int parameter expected for `row`.");
+    return;
+  }
+
+  if (row < 0 || row >= 3) {
+    gammaError(vm, "Out of bounds: `row`.");
+    return;
+  }
+
+  int col;
+
+  if (!gammaCheckInt(vm, 2, &col)) {
+    gammaError(vm, "Int parameter expected for `col`.");
+    return;
+  }
+
+  if (col < 0 || col >= 3) {
+    gammaError(vm, "Out of bounds: `col`.");
+    return;
+  }
+
+  agateSlotSetFloat(vm, AGATE_RETURN_SLOT, mat->m[col][row]);
 }
 
 static void gammaMat3FAdd(AgateVM *vm) {
@@ -876,7 +1192,7 @@ static void gammaMat3FAdd(AgateVM *vm) {
 
   for (int col = 0; col < 3; ++col) {
     for (int row = 0; row < 3; ++row) {
-      result->data[col][row] = mat->data[col][row] + other->data[col][row];
+      result->m[col][row] = mat->m[col][row] + other->m[col][row];
     }
   }
 }
@@ -894,7 +1210,7 @@ static void gammaMat3FSub(AgateVM *vm) {
 
   for (int col = 0; col < 3; ++col) {
     for (int row = 0; row < 3; ++row) {
-      result->data[col][row] = mat->data[col][row] - other->data[col][row];
+      result->m[col][row] = mat->m[col][row] - other->m[col][row];
     }
   }
 }
@@ -910,9 +1226,9 @@ static void gammaMat3FMul(AgateVM *vm) {
     agateGetVariable(vm, "gamma", "Vec3F", class_slot);
     struct GammaVec3F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-    result->x = mat->data[0][0] * vec->x + mat->data[1][0] * vec->y + mat->data[2][0] * vec->z;
-    result->y = mat->data[0][1] * vec->x + mat->data[1][1] * vec->y + mat->data[2][1] * vec->z;
-    result->z = mat->data[0][2] * vec->x + mat->data[1][2] * vec->y + mat->data[2][2] * vec->z;
+    result->position.v[0] = mat->m[0][0] * vec->position.v[0] + mat->m[1][0] * vec->position.v[1] + mat->m[2][0] * vec->z;
+    result->position.v[1] = mat->m[0][1] * vec->position.v[0] + mat->m[1][1] * vec->position.v[1] + mat->m[2][1] * vec->z;
+    result->z = mat->m[0][2] * vec->position.v[0] + mat->m[1][2] * vec->position.v[1] + mat->m[2][2] * vec->z;
   } else */
   if (agateSlotGetForeignTag(vm, 1) == GAMMA_MAT3F_TAG) {
     struct GammaMat3F *other = agateSlotGetForeign(vm, 1);
@@ -921,17 +1237,7 @@ static void gammaMat3FMul(AgateVM *vm) {
     agateGetVariable(vm, "gamma", "Mat3F", class_slot);
     struct GammaMat3F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-    for (int col = 0; col < 3; ++col) {
-      for (int row = 0; row < 3; ++row) {
-        float sum = 0.0f;
-
-        for (int k = 0; k < 3; ++k) {
-          sum += mat->data[k][row] * other->data[col][k];
-        }
-
-        result->data[col][row] = sum;
-      }
-    }
+    gammaMat3FRawMul(result, mat, other);
   } else {
     // TODO: error
   }
@@ -947,7 +1253,7 @@ static void gammaMat3FTranspose(AgateVM *vm) {
 
   for (int col = 0; col < 3; ++col) {
     for (int row = 0; row < 3; ++row) {
-      result->data[col][row] = mat->data[row][col];
+      result->m[col][row] = mat->m[row][col];
     }
   }
 }
@@ -960,17 +1266,17 @@ static void gammaMat3FInvert(AgateVM *vm) {
   agateGetVariable(vm, "gamma", "Mat3F", class_slot);
   struct GammaMat3F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-  result->data[0][0] = mat->data[1][1] * mat->data[2][2] - mat->data[2][1] * mat->data[1][2];
-  result->data[0][1] = - (mat->data[0][1] * mat->data[2][2] - mat->data[2][1] * mat->data[0][2]);
-  result->data[0][2] = mat->data[0][1] * mat->data[1][2] - mat->data[1][1] * mat->data[0][2];
-  result->data[1][0] = - (mat->data[1][0] * mat->data[2][2] - mat->data[2][0] * mat->data[1][2]);
-  result->data[1][1] = mat->data[0][0] * mat->data[2][2] - mat->data[2][0] * mat->data[0][2];
-  result->data[1][2] = - (mat->data[0][0] * mat->data[1][2] - mat->data[1][0] * mat->data[0][2]);
-  result->data[2][0] = mat->data[1][0] * mat->data[2][1] - mat->data[2][0] * mat->data[1][1];
-  result->data[2][1] = - (mat->data[0][0] * mat->data[2][1] - mat->data[2][0] * mat->data[0][1]);
-  result->data[2][2] = mat->data[0][0] * mat->data[1][1] - mat->data[1][0] * mat->data[0][1];
+  result->m[0][0] = mat->m[1][1] * mat->m[2][2] - mat->m[2][1] * mat->m[1][2];
+  result->m[0][1] = - (mat->m[0][1] * mat->m[2][2] - mat->m[2][1] * mat->m[0][2]);
+  result->m[0][2] = mat->m[0][1] * mat->m[1][2] - mat->m[1][1] * mat->m[0][2];
+  result->m[1][0] = - (mat->m[1][0] * mat->m[2][2] - mat->m[2][0] * mat->m[1][2]);
+  result->m[1][1] = mat->m[0][0] * mat->m[2][2] - mat->m[2][0] * mat->m[0][2];
+  result->m[1][2] = - (mat->m[0][0] * mat->m[1][2] - mat->m[1][0] * mat->m[0][2]);
+  result->m[2][0] = mat->m[1][0] * mat->m[2][1] - mat->m[2][0] * mat->m[1][1];
+  result->m[2][1] = - (mat->m[0][0] * mat->m[2][1] - mat->m[2][0] * mat->m[0][1]);
+  result->m[2][2] = mat->m[0][0] * mat->m[1][1] - mat->m[1][0] * mat->m[0][1];
 
-  float det = mat->data[0][0] * result->data[0][0] + mat->data[0][1] * result->data[1][0] + mat->data[0][2] * result->data[2][0];
+  float det = mat->m[0][0] * result->m[0][0] + mat->m[0][1] * result->m[1][0] + mat->m[0][2] * result->m[2][0];
 
   if (det < FLT_EPSILON) {
     agateSlotSetNil(vm, AGATE_RETURN_SLOT);
@@ -979,7 +1285,7 @@ static void gammaMat3FInvert(AgateVM *vm) {
 
   for (int col = 0; col < 3; ++col) {
     for (int row = 0; row < 3; ++row) {
-      result->data[col][row] /= det;
+      result->m[col][row] /= det;
     }
   }
 }
@@ -996,8 +1302,8 @@ static void gammaMat3FTransformPoint(AgateVM *vm) {
   agateGetVariable(vm, "gamma", "Vec2F", class_slot);
   struct GammaVec2F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-  result->x = mat->data[0][0] * x + mat->data[1][0] * y +  mat->data[2][0];
-  result->y = mat->data[0][1] * x + mat->data[1][1] * y +  mat->data[2][1];
+  result->v[0] = mat->m[0][0] * x + mat->m[1][0] * y +  mat->m[2][0];
+  result->v[1] = mat->m[0][1] * x + mat->m[1][1] * y +  mat->m[2][1];
 }
 
 static void gammaMat3FTransformVector(AgateVM *vm) {
@@ -1012,8 +1318,8 @@ static void gammaMat3FTransformVector(AgateVM *vm) {
   agateGetVariable(vm, "gamma", "Vec2F", class_slot);
   struct GammaVec2F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
 
-  result->x = mat->data[0][0] * x + mat->data[1][0] * y;
-  result->y = mat->data[0][1] * x + mat->data[1][1] * y;
+  result->v[0] = mat->m[0][0] * x + mat->m[1][0] * y;
+  result->v[1] = mat->m[0][1] * x + mat->m[1][1] * y;
 }
 
 /*
@@ -1125,6 +1431,9 @@ AgateForeignMethodFunc gammaRootMethodHandler(AgateVM *vm, const char *unit_name
       if (gammaEquals(signature, "!=(_)")) { return gammaColorNotEq; }
       if (gammaEquals(signature, "darker(_)")) { return gammaColorDarker; }
       if (gammaEquals(signature, "lighter(_)")) { return gammaColorLighter; }
+      if (gammaEquals(signature, "normalize()")) { return gammaColorNormalize; }
+    } else {
+      if (gammaEquals(signature, "lerp(_,_,_)")) { return gammaColorLerp; }
     }
   }
 
@@ -1141,10 +1450,11 @@ AgateForeignMethodFunc gammaRootMethodHandler(AgateVM *vm, const char *unit_name
       if (gammaEquals(signature, "y=(_)")) { return gammaRectFSetY; }
       if (gammaEquals(signature, "w=(_)")) { return gammaRectFSetW; }
       if (gammaEquals(signature, "h=(_)")) { return gammaRectFSetH; }
-      if (gammaEquals(signature, "position")) { return gammaRectFPosition; }
-      if (gammaEquals(signature, "size")) { return gammaRectFSize; }
-      if (gammaEquals(signature, "contains(_,_)")) { return gammaRectFContains2; }
-      if (gammaEquals(signature, "contains(_)")) { return gammaRectFContains1; }
+      if (gammaEquals(signature, "position")) { return gammaRectFGetPosition; }
+      if (gammaEquals(signature, "size")) { return gammaRectFGetSize; }
+      if (gammaEquals(signature, "position=(_)")) { return gammaRectFSetPosition; }
+      if (gammaEquals(signature, "size=(_)")) { return gammaRectFSetSize; }
+      if (gammaEquals(signature, "contains(_)")) { return gammaRectFContains; }
       if (gammaEquals(signature, "intersects(_)")) { return gammaRectFIntersects; }
     }
   }
@@ -1162,10 +1472,11 @@ AgateForeignMethodFunc gammaRootMethodHandler(AgateVM *vm, const char *unit_name
       if (gammaEquals(signature, "y=(_)")) { return gammaRectISetY; }
       if (gammaEquals(signature, "w=(_)")) { return gammaRectISetW; }
       if (gammaEquals(signature, "h=(_)")) { return gammaRectISetH; }
-      if (gammaEquals(signature, "position")) { return gammaRectIPosition; }
-      if (gammaEquals(signature, "size")) { return gammaRectISize; }
-      if (gammaEquals(signature, "contains(_,_)")) { return gammaRectIContains2; }
-      if (gammaEquals(signature, "contains(_)")) { return gammaRectIContains1; }
+      if (gammaEquals(signature, "position")) { return gammaRectIGetPosition; }
+      if (gammaEquals(signature, "size")) { return gammaRectIGetSize; }
+      if (gammaEquals(signature, "position=(_)")) { return gammaRectISetPosition; }
+      if (gammaEquals(signature, "size=(_)")) { return gammaRectISetSize; }
+      if (gammaEquals(signature, "contains(_)")) { return gammaRectIContains; }
       if (gammaEquals(signature, "intersects(_)")) { return gammaRectIIntersects; }
     }
   }
@@ -1175,7 +1486,7 @@ AgateForeignMethodFunc gammaRootMethodHandler(AgateVM *vm, const char *unit_name
       if (gammaEquals(signature, "init identity()")) { return gammaMat3FIdentity; }
       if (gammaEquals(signature, "init translation(_,_)")) { return gammaMat3FTranslation; }
       if (gammaEquals(signature, "init rotation(_)")) { return gammaMat3FRotation1; }
-      if (gammaEquals(signature, "init rotation(_,_)")) { return gammaMat3FRotation2; }
+      if (gammaEquals(signature, "init rotation(_,_,_)")) { return gammaMat3FRotation3; }
       if (gammaEquals(signature, "init scale(_,_)")) { return gammaMat3FScale; }
       if (gammaEquals(signature, "[_,_]")) { return gammaMat3FSubscript; }
       if (gammaEquals(signature, "+(_)")) { return gammaMat3FAdd; }
@@ -1189,4 +1500,3 @@ AgateForeignMethodFunc gammaRootMethodHandler(AgateVM *vm, const char *unit_name
   }
   return NULL;
 }
-

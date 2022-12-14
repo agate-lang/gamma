@@ -4,13 +4,11 @@
 #include "agate.h"
 
 struct GammaVec2F {
-  float x;
-  float y;
+  float v[2];
 };
 
 struct GammaVec2I {
-  int x;
-  int y;
+  int v[2];
 };
 
 struct GammaColor {
@@ -20,23 +18,30 @@ struct GammaColor {
   float a;
 };
 
+void gammaColorRawFromRgba(struct GammaColor *color, int64_t rgba);
+
 struct GammaRectF {
-  float x;
-  float y;
-  float w;
-  float h;
+  struct GammaVec2F position;
+  struct GammaVec2F size;
 };
 
+static inline
+struct GammaVec2F gammaRectFRawCenter(const struct GammaRectF *rect) {
+  struct GammaVec2F center = {{ rect->position.v[0] + rect->size.v[0] / 2.0f, rect->position.v[1] + rect->size.v[1] / 2.0f }};
+  return center;
+}
+
 struct GammaRectI {
-  int x;
-  int y;
-  int w;
-  int h;
+  struct GammaVec2I position;
+  struct GammaVec2I size;
 };
 
 struct GammaMat3F {
-  float data[3][3]; // column-major
+  float m[3][3]; // column-major
 };
+
+void gammaMat3FRawTranslation(struct GammaMat3F *mat, struct GammaVec2F offset);
+void gammaMat3FRawMul(struct GammaMat3F *result, struct GammaMat3F *lhs, struct GammaMat3F *rhs);
 
 AgateForeignClassHandler gammaRootClassHandler(AgateVM *vm, const char *unit_name, const char *class_name);
 AgateForeignMethodFunc gammaRootMethodHandler(AgateVM *vm, const char *unit_name, const char *class_name, AgateForeignMethodKind kind, const char *signature);

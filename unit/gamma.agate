@@ -22,6 +22,8 @@ foreign class Vec2F {
 
   ==(other) foreign
   !=(other) foreign
+
+  static (x, y) { Vec2F.new(x, y) }
 }
 
 foreign class Vec2I {
@@ -43,6 +45,8 @@ foreign class Vec2I {
 
   ==(other) foreign
   !=(other) foreign
+
+  static (x, y) { Vec2I.new(x, y) }
 }
 
 foreign class Color {
@@ -72,7 +76,11 @@ foreign class Color {
   lighter(ratio) foreign
   lighter() { .lighter(0.5) }
 
+  normalize() foreign
+
   to_s { "(%(.r), %(.g), %(.b), %(.a))" }
+
+  static lerp(color0, color1, ratio) foreign
 
   static BLACK      { Color.new(0.0, 0.0, 0.0, 1.0) }
   static WHITE      { Color.new(1.0, 1.0, 1.0, 1.0) }
@@ -95,6 +103,9 @@ foreign class Color {
   static TRANSPARENT { Color.new(0.0, 0.0, 0.0, 0.0) }
   static OPAQUE(val) { Color.new(1.0, 1.0, 1.0, val) }
   static GRAY(val)  { Color.new(val, val, val, 1.0) }
+
+  static (r, g, b) { Color.new(r, g, b, 1.0) }
+  static (r, g, b, a) { Color.new(r, g, b, a) }
 }
 
 foreign class RectF {
@@ -107,19 +118,22 @@ foreign class RectF {
   w foreign
   h foreign
 
-  x=(val) foreign
-  y=(val) foreign
-  w=(val) foreign
-  h=(val) foreign
+  x=(value) foreign
+  y=(value) foreign
+  w=(value) foreign
+  h=(value) foreign
 
   position foreign
   size foreign
-#   center foreign
 
-  contains(x, y) foreign
+  position=(value) foreign
+  size=(value) foreign
+
   contains(other) foreign
-
   intersects(other) foreign
+
+  static (x, y, w, h) { RectF.new(x, y, w, h) }
+  static (w, h) { RectF.new(0.0, 0.0, w, h) }
 }
 
 foreign class RectI {
@@ -150,17 +164,21 @@ foreign class RectI {
 #   bottom_center foreign
 #   bottom_right foreign
 
-  contains(x, y) foreign
+#   contains(x, y) foreign
   contains(other) foreign
 
   intersects(other) foreign
+
+  static (x, y, w, h) { RectI.new(x, y, w, h) }
+  static (w, h) { RectI.new(0.0, 0.0, w, h) }
 }
 
 foreign class Mat3F {
   construct identity() foreign
   construct translation(tx, ty) foreign
   construct rotation(angle) foreign
-  construct rotation(angle, center) foreign
+  construct rotation(angle, center) { .rotation(angle, center.x, center.y) }
+  construct rotation(angle, cx, cy) foreign
   construct scale(sx, sy) foreign
 
   [row,col] foreign

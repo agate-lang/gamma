@@ -1,3 +1,6 @@
 [submodule "vendor/agate"]
 	path = vendor/agate
 	url = https://github.com/agate-lang/agate.git
+[submodule "vendor/stb"]
+	path = vendor/stb
+	url = https://github.com/nothings/stb.git

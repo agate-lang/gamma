@@ -5,16 +5,28 @@ project(GAMMA
   LANGUAGES C
 )
 
+option(GAMMA_USE_EMBEDDED_LIBS "Build the library with the submodule libraries" ON)
+
 include(GNUInstallDirs)
 
-find_package(sdl2 REQUIRED)
+find_package(SDL2 REQUIRED)
+
+if(GAMMA_USE_EMBEDDED_LIBS)
+  message(STATUS "Build with embedded libraries")
+  set(Stb_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb")
+else()
+  # works on vcpkg
+  find_package(Stb REQUIRED)
+endif()
 
 set(GAMMA_UNIT_DIRECTORY "${CMAKE_INSTALL_FULL_DATAROOTDIR}/gamma/unit")
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
 add_executable(gamma
   src/gamma.c
+  src/gamma_check.c
   src/gamma_common.c
+  src/gamma_error.c
   src/gamma_event.c
   src/gamma_gfx.c
   src/gamma_root.c
@@ -47,6 +59,7 @@ target_include_directories(gamma
     "${CMAKE_CURRENT_BINARY_DIR}"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/agate"
     "${CMAKE_CURRENT_SOURCE_DIR}/vendor/glad/include"
+    "${Stb_INCLUDE_DIR}"
 )
 
 target_link_libraries(gamma
