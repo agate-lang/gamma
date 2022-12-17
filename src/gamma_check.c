@@ -6,6 +6,18 @@
 #include "gamma_root.h"
 #include "gamma_tags.h"
 
+bool gammaCheckBool(AgateVM *vm, ptrdiff_t slot, bool *result) {
+  assert(result);
+
+  if (agateSlotType(vm, slot) == AGATE_TYPE_BOOL) {
+    *result = agateSlotGetBool(vm, slot);
+    return true;
+  }
+
+  *result = false;
+  return false;
+}
+
 bool gammaCheckInt(AgateVM *vm, ptrdiff_t slot, int *result) {
   assert(result);
 
@@ -44,6 +56,18 @@ bool gammaCheckFloat(AgateVM *vm, ptrdiff_t slot, float *result) {
   }
 
   *result = 0.0f;
+  return false;
+}
+
+bool gammaCheckString(AgateVM *vm, ptrdiff_t slot, const char **result) {
+  assert(result);
+
+  if (agateSlotType(vm, slot) == AGATE_TYPE_STRING) {
+    *result = agateSlotGetString(vm, slot);
+    return true;
+  }
+
+  *result = "";
   return false;
 }
 

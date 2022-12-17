@@ -10,6 +10,5 @@
 #endif
 
 void gammaError(AgateVM *vm, const char *format, ...) GAMMA_FORMAT(2, 3);
-bool gammaCheckError(AgateVM *vm, bool check, const char *format, ...) GAMMA_FORMAT(3, 4);
 
 #endif // GAMMA_ERROR_H

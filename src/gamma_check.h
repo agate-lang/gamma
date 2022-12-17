@@ -9,9 +9,12 @@ struct GammaColor;
 struct GammaRectF;
 struct GammaRectI;
 
+bool gammaCheckBool(AgateVM *vm, ptrdiff_t slot, bool *result);
 bool gammaCheckInt(AgateVM *vm, ptrdiff_t slot, int *result);
 bool gammaCheckInt64(AgateVM *vm, ptrdiff_t slot, int64_t *result);
 bool gammaCheckFloat(AgateVM *vm, ptrdiff_t slot, float *result);
+
+bool gammaCheckString(AgateVM *vm, ptrdiff_t slot, const char **result);
 
 bool gammaCheckForeign(AgateVM *vm, ptrdiff_t slot, uint64_t tag);
 

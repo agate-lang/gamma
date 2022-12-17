@@ -6,4 +6,36 @@ foreign class Window {
   construct new(title, w, h) foreign
   open foreign
   close() foreign
+
+  id foreign
+
+  title foreign
+  title=(title) foreign
+
+  position foreign
+  position=(value) foreign
+
+  size foreign
+  size=(value) foreign
+
+  framebuffer_size foreign
+
+  fullscreen foreign
+  fullscreen=(value) foreign
+  toggle_fullscreen() foreign
+
+  minimized foreign
+  minimize() foreign
+  maximized foreign
+  maximize() foreign
+  restore() foreign
+
+  visible foreign
+  visible=(value) foreign
+
+  decorated foreign
+  decorated=(value) foreign
+
+  resizable foreign
+  resizable=(value) foreign
 }

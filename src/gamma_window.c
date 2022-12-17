@@ -4,12 +4,30 @@
 #include <stdbool.h>
 
 #include "gamma_common.h"
+#include "gamma_check.h"
 #include "gamma_error.h"
+#include "gamma_root.h"
 #include "gamma_tags.h"
 
 /*
  * Window
  */
+
+// raw
+
+static void gammaWindowRawSetFullscreen(struct GammaWindow *window, bool fullscreen, AgateVM *vm) {
+  if (fullscreen) {
+    if (SDL_SetWindowFullscreen(window->ptr, SDL_WINDOW_FULLSCREEN_DESKTOP) != 0) {
+      gammaError(vm, "Unable to set the window fullscreen.");
+    }
+  } else {
+    if (SDL_SetWindowFullscreen(window->ptr, 0) != 0) {
+      gammaError(vm, "Unable to come back in windowed mode.");
+    }
+  }
+
+  window->fullscreen = fullscreen;
+}
 
 // class
 
@@ -64,6 +82,255 @@ static void gammaWindowClose(AgateVM *vm) {
   agateSlotSetNil(vm, AGATE_RETURN_SLOT);
 }
 
+static void gammaWindowGetId(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+  Uint32 id = SDL_GetWindowID(window->ptr);
+
+  if (id == 0) {
+    gammaError(vm, "Unable to get window id.");
+    agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    return;
+  }
+
+  agateSlotSetInt(vm, AGATE_RETURN_SLOT, id);
+}
+
+static void gammaWindowGetTitle(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+  agateSlotSetString(vm, AGATE_RETURN_SLOT, SDL_GetWindowTitle(window->ptr));
+}
+
+static void gammaWindowSetTitle(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  const char *title;
+
+  if (!gammaCheckString(vm, 1, &title)) {
+    gammaError(vm, "String parameter expected for `title`.");
+    agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    return;
+  }
+
+  SDL_SetWindowTitle(window->ptr, title);
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaWindowGetPosition(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  ptrdiff_t class_slot = agateSlotAllocate(vm);
+  agateGetVariable(vm, "gamma", "Vec2I", class_slot);
+  struct GammaVec2I *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
+
+  SDL_GetWindowPosition(window->ptr, &result->v[0], &result->v[1]);
+}
+
+static void gammaWindowSetPosition(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2I size;
+
+  if (!gammaCheckVec2I(vm, 1, &size)) {
+    gammaError(vm, "Vec2I parameter expected for `value`.");
+    agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    return;
+  }
+
+  SDL_SetWindowPosition(window->ptr, size.v[0], size.v[1]);
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaWindowGetSize(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  ptrdiff_t class_slot = agateSlotAllocate(vm);
+  agateGetVariable(vm, "gamma", "Vec2I", class_slot);
+  struct GammaVec2I *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
+
+  SDL_GetWindowSize(window->ptr, &result->v[0], &result->v[1]);
+}
+
+static void gammaWindowSetSize(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2I size;
+
+  if (!gammaCheckVec2I(vm, 1, &size)) {
+    gammaError(vm, "Vec2I parameter expected for `value`.");
+    agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    return;
+  }
+
+  SDL_SetWindowSize(window->ptr, size.v[0], size.v[1]);
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaWindowGetFramebufferSize(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  ptrdiff_t class_slot = agateSlotAllocate(vm);
+  agateGetVariable(vm, "gamma", "Vec2I", class_slot);
+  struct GammaVec2I *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
+
+  SDL_GL_GetDrawableSize(window->ptr, &result->v[0], &result->v[1]);
+}
+
+static void gammaWindowIsFullscreen(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, window->fullscreen);
+}
+
+static void gammaWindowSetFullscreen(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  bool fullscreen;
+
+  if (!gammaCheckBool(vm, 1, &fullscreen)) {
+    gammaError(vm, "Bool parameter expected for `value`.");
+    agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    return;
+  }
+
+  gammaWindowRawSetFullscreen(window, fullscreen, vm);
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaWindowToggleFullscreen(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  gammaWindowRawSetFullscreen(window, !window->fullscreen, vm);
+  agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+}
+
+static void gammaWindowIsMinimized(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  Uint32 flags = SDL_GetWindowFlags(window->ptr);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, (flags & SDL_WINDOW_MINIMIZED) != 0);
+}
+
+static void gammaWindowMinimize(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  SDL_MinimizeWindow(window->ptr);
+  agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+}
+
+static void gammaWindowIsMaximized(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  Uint32 flags = SDL_GetWindowFlags(window->ptr);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, (flags & SDL_WINDOW_MAXIMIZED) != 0);
+}
+
+static void gammaWindowMaximize(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  SDL_MaximizeWindow(window->ptr);
+  agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+}
+
+static void gammaWindowRestore(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  SDL_RestoreWindow(window->ptr);
+  agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+}
+
+static void gammaWindowIsVisible(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  Uint32 flags = SDL_GetWindowFlags(window->ptr);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, (flags & SDL_WINDOW_SHOWN) != 0);
+}
+
+static void gammaWindowSetVisible(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  bool visible;
+
+  if (!gammaCheckBool(vm, 1, &visible)) {
+    gammaError(vm, "Bool parameter expected for `value`.");
+    agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    return;
+  }
+
+  if (visible) {
+    SDL_ShowWindow(window->ptr);
+  } else {
+    SDL_HideWindow(window->ptr);
+  }
+
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaWindowIsDecorated(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  Uint32 flags = SDL_GetWindowFlags(window->ptr);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, (flags & SDL_WINDOW_BORDERLESS) == 0);
+}
+
+static void gammaWindowSetDecorated(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  bool decorated;
+
+  if (!gammaCheckBool(vm, 1, &decorated)) {
+    gammaError(vm, "Bool parameter expected for `value`.");
+    agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    return;
+  }
+
+  SDL_SetWindowBordered(window->ptr, decorated ? SDL_TRUE : SDL_FALSE);
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaWindowIsResizable(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  Uint32 flags = SDL_GetWindowFlags(window->ptr);
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, (flags & SDL_WINDOW_RESIZABLE) != 0);
+}
+
+static void gammaWindowSetResizable(AgateVM *vm) {
+  assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
+  struct GammaWindow *window = agateSlotGetForeign(vm, 0);
+
+  bool resizable;
+
+  if (!gammaCheckBool(vm, 1, &resizable)) {
+    gammaError(vm, "Bool parameter expected for `value`.");
+    agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    return;
+  }
+
+  SDL_SetWindowResizable(window->ptr, resizable ? SDL_TRUE : SDL_FALSE);
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+
 /*
  * unit configuration
  */
@@ -90,6 +357,28 @@ AgateForeignMethodFunc gammaWindowMethodHandler(AgateVM *vm, const char *unit_na
       if (gammaEquals(signature, "init new(_,_,_)")) { return gammaWindowNew; }
       if (gammaEquals(signature, "open")) { return gammaWindowOpen; }
       if (gammaEquals(signature, "close()")) { return gammaWindowClose; }
+      if (gammaEquals(signature, "id")) { return gammaWindowGetId; }
+      if (gammaEquals(signature, "title")) { return gammaWindowGetTitle; }
+      if (gammaEquals(signature, "title=(_)")) { return gammaWindowSetTitle; }
+      if (gammaEquals(signature, "position")) { return gammaWindowGetPosition; }
+      if (gammaEquals(signature, "position=(_)")) { return gammaWindowSetPosition; }
+      if (gammaEquals(signature, "size")) { return gammaWindowGetSize; }
+      if (gammaEquals(signature, "size=(_)")) { return gammaWindowSetSize; }
+      if (gammaEquals(signature, "framebuffer_size")) { return gammaWindowGetFramebufferSize; }
+      if (gammaEquals(signature, "fullscreen")) { return gammaWindowIsFullscreen; }
+      if (gammaEquals(signature, "fullscreen=(_)")) { return gammaWindowSetFullscreen; }
+      if (gammaEquals(signature, "toggle_fullscreen()")) { return gammaWindowToggleFullscreen; }
+      if (gammaEquals(signature, "minimized")) { return gammaWindowIsMinimized; }
+      if (gammaEquals(signature, "minimize()")) { return gammaWindowMinimize; }
+      if (gammaEquals(signature, "maximized")) { return gammaWindowIsMaximized; }
+      if (gammaEquals(signature, "maximize()")) { return gammaWindowMaximize; }
+      if (gammaEquals(signature, "restore()")) { return gammaWindowRestore; }
+      if (gammaEquals(signature, "visible")) { return gammaWindowIsVisible; }
+      if (gammaEquals(signature, "visible=(_)")) { return gammaWindowSetVisible; }
+      if (gammaEquals(signature, "decorated")) { return gammaWindowIsDecorated; }
+      if (gammaEquals(signature, "decorated=(_)")) { return gammaWindowSetDecorated; }
+      if (gammaEquals(signature, "resizable")) { return gammaWindowIsResizable; }
+      if (gammaEquals(signature, "resizable=(_)")) { return gammaWindowSetResizable; }
     }
   }
 

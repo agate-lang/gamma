@@ -715,7 +715,7 @@ struct GammaRenderer {
 
 // raw functions
 
-static void gammaRendererRawCreate(AgateVM *vm, struct GammaRenderer *renderer, struct GammaWindow *window) {
+static void gammaRendererRawCreate(struct GammaRenderer *renderer, struct GammaWindow *window, AgateVM *vm) {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
@@ -930,7 +930,7 @@ static void gammaRendererNew(AgateVM *vm) {
 
   struct GammaWindow *window = agateSlotGetForeign(vm, 1);
 
-  gammaRendererRawCreate(vm, renderer, window);
+  gammaRendererRawCreate(renderer, window, vm);
 }
 
 static void gammaRendererClear0(AgateVM *vm) {
@@ -1016,6 +1016,35 @@ static void gammaRendererDrawRect2(AgateVM *vm) {
   glDeleteBuffers(1, &data.vertex_buffer);
 }
 
+
+static void gammaRendererIsVsynced(AgateVM *vm) {
+  agateSlotSetBool(vm, AGATE_RETURN_SLOT, SDL_GL_GetSwapInterval() != 0);
+}
+
+static void gammaRendererSetVsynced(AgateVM *vm) {
+  bool vsynced;
+
+  if (!gammaCheckBool(vm, 1, &vsynced)) {
+    gammaError(vm, "Bool parameter expected for `value`.");
+    agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    return;
+  }
+
+  if (SDL_GL_SetSwapInterval(vsynced ? 1 : 0) != 0) {
+    if (vsynced) {
+      gammaError(vm, "Unable to set vertical synchronization.");
+    } else {
+      gammaError(vm, "Unable to unset vertical synchronization.");
+    }
+
+    agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    return;
+  }
+
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+
 /*
  * unit configuration
  */
@@ -1091,6 +1120,8 @@ AgateForeignMethodFunc gammaGfxMethodHandler(AgateVM *vm, const char *unit_name,
       if (gammaEquals(signature, "display()")) { return gammaRendererDisplay; }
       if (gammaEquals(signature, "camera=(_)")) { return gammaRendererSetCamera; }
       if (gammaEquals(signature, "draw_rect(_,_)")) { return gammaRendererDrawRect2; }
+      if (gammaEquals(signature, "vsynced")) { return gammaRendererIsVsynced; }
+      if (gammaEquals(signature, "vsynced=(_)")) { return gammaRendererSetVsynced; }
     }
   }
 

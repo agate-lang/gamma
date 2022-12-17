@@ -124,4 +124,7 @@ foreign class Renderer {
 #
 #   draw_spline_loop(points, color, width, type) foreign
 #   draw_spline_chain(points, color, width, type) foreign
+
+  vsynced foreign
+  vsynced=(value) foreign
 }

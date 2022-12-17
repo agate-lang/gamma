@@ -29,15 +29,3 @@ void gammaError(AgateVM *vm, const char *format, ...) {
   gammaErrorV(vm, format, args0);
   va_end(args0);
 }
-
-bool gammaCheckError(AgateVM *vm, bool check, const char *format, ...) {
-  if (check) {
-    return check;
-  }
-
-  va_list args0;
-  va_start(args0, format);
-  gammaErrorV(vm, format, args0);
-  va_end(args0);
-  return check;
-}
