@@ -466,8 +466,8 @@ static void gammaCameraRawUpdate(struct GammaCamera *camera, struct GammaVec2I f
 static void gammaCameraRawComputeViewMatrix(const struct GammaCamera *camera, struct GammaMat3F *mat) {
   float sx = 2.0f / camera->computed_size.v[0];
   float sy = - 2.0f / camera->computed_size.v[1];
-  float cos_v = cos(camera->rotation);
-  float sin_v = sin(camera->rotation);
+  float cos_v = cosf(camera->rotation);
+  float sin_v = sinf(camera->rotation);
   float tx = camera->center.v[0];
   float ty = camera->center.v[1];
 

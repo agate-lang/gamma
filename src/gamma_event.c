@@ -600,7 +600,7 @@ static void gammaKeyboardKeycodeName(AgateVM *vm) {
     return;
   }
 
-  agateSlotSetString(vm, AGATE_RETURN_SLOT, SDL_GetKeyName(keycode));
+  agateSlotSetString(vm, AGATE_RETURN_SLOT, SDL_GetKeyName((SDL_Keycode) keycode));
 }
 
 static void gammaKeyboardLocalize(AgateVM *vm) {
@@ -624,7 +624,7 @@ static void gammaKeyboardUnlocalize(AgateVM *vm) {
     return;
   }
 
-  agateSlotSetInt(vm, AGATE_RETURN_SLOT, SDL_GetScancodeFromKey(keycode));
+  agateSlotSetInt(vm, AGATE_RETURN_SLOT, SDL_GetScancodeFromKey((SDL_Keycode) keycode));
 }
 
 /*

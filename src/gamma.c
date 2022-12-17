@@ -45,7 +45,9 @@ static void error(AgateVM *vm, AgateErrorKind kind, const char *unit_name, int l
 }
 
 static void input(AgateVM *vm, char *buffer, size_t size) {
-  fgets(buffer, (int) size, stdin);
+  if (fgets(buffer, (int) size, stdin) == NULL) {
+    buffer[0] = '\0';
+  }
 }
 
 int main(int argc, char *argv[]) {
