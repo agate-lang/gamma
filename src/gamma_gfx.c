@@ -715,15 +715,27 @@ struct GammaRenderer {
 
 // raw functions
 
-static void gammaRendererRawCreate(struct GammaRenderer *renderer, struct GammaWindow *window) {
+static void gammaRendererRawCreate(AgateVM *vm, struct GammaRenderer *renderer, struct GammaWindow *window) {
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
-  renderer->context = SDL_GL_CreateContext(window->ptr); // TODO: error
+  renderer->context = SDL_GL_CreateContext(window->ptr);
 
-  SDL_GL_MakeCurrent(window->ptr, renderer->context); // TODO: error
-  gladLoadGLLoader(SDL_GL_GetProcAddress); // TODO: error
+  if (renderer->context == NULL) {
+    gammaError(vm, "Unable to create a context: %s\n", SDL_GetError());
+    return;
+  }
+
+  if (SDL_GL_MakeCurrent(window->ptr, renderer->context) != 0) {
+    gammaError(vm, "Unable to make the context current: %s\n", SDL_GetError());
+    return;
+  }
+
+  if (gladLoadGLLoader(SDL_GL_GetProcAddress) == 0) {
+    gammaError(vm, "Unable to load OpenGL 3.3.\n");
+    return;
+  }
 
   glEnable(GL_BLEND);
   glEnable(GL_SCISSOR_TEST);
@@ -781,7 +793,7 @@ static void gammaRendererRawDestroy(struct GammaRenderer *renderer) {
   glDeleteVertexArrays(1, &renderer->vao);
   renderer->vao = 0;
 
-  SDL_GL_DeleteContext(renderer->context); // TODO: error
+  SDL_GL_DeleteContext(renderer->context);
   renderer->context = NULL;
 }
 
@@ -918,7 +930,7 @@ static void gammaRendererNew(AgateVM *vm) {
 
   struct GammaWindow *window = agateSlotGetForeign(vm, 1);
 
-  gammaRendererRawCreate(renderer, window);
+  gammaRendererRawCreate(vm, renderer, window);
 }
 
 static void gammaRendererClear0(AgateVM *vm) {

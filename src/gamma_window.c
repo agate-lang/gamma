@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "gamma_common.h"
+#include "gamma_error.h"
 #include "gamma_tags.h"
 
 /*
@@ -40,6 +41,12 @@ static void gammaWindowNew(AgateVM *vm) {
   int h = (int) agateSlotGetInt(vm, 3);
 
   window->ptr = SDL_CreateWindow(title, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, w, h, SDL_WINDOW_OPENGL);
+
+  if (window->ptr == NULL) {
+    gammaError(vm, "Unable to create a window: %s\n", SDL_GetError());
+    return;
+  }
+
   window->should_close = false;
   window->fullscreen = false;
 }
