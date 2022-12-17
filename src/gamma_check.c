@@ -18,6 +18,18 @@ bool gammaCheckInt(AgateVM *vm, ptrdiff_t slot, int *result) {
   return false;
 }
 
+bool gammaCheckInt64(AgateVM *vm, ptrdiff_t slot, int64_t *result) {
+  assert(result);
+
+  if (agateSlotType(vm, slot) == AGATE_TYPE_INT) {
+    *result = agateSlotGetInt(vm, slot);
+    return true;
+  }
+
+  *result = 0;
+  return false;
+}
+
 bool gammaCheckFloat(AgateVM *vm, ptrdiff_t slot, float *result) {
   assert(result);
 

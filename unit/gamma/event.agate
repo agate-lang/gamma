@@ -40,63 +40,189 @@ class Event {
   static UNKNOWN foreign
 }
 
-foreign class GenericEvent is Event {
+foreign class __GenericEvent is Event {
 }
 
-# foreign class KeyboardEvent is Event {
-#   window_id foreign
-#   pressed foreign
-#   repeat foreign
-#   scancode foreign
-#   keycode foreign
-#   modifiers foreign
-# }
-#
-# foreign class MouseMotionEvent is Event {
-#   window_id foreign
-#   coordinates foreign
-#   motion foreign
-# }
-#
-# foreign class MouseButtonEvent is Event {
-#   window_id foreign
-#   button foreign
-#   pressed foreign
-#   clicks foreign
-#   coordinates foreign
-# }
-#
-# foreign class WindowEvent is Event {
-#   window_id foreign
-# }
-#
-# foreign class ResizeEvent is Event {
-#   window_id foreign
-#   size foreign
-# }
+foreign class KeyboardEvent is Event {
+  window_id foreign
+  pressed foreign
+  repeat foreign
+  scancode foreign
+  keycode foreign
+  modifiers foreign
+  has_modifier(modifier) { (.modifiers & modifier) != 0 }
+}
+
+foreign class MouseMotionEvent is Event {
+  window_id foreign
+  coordinates foreign
+  motion foreign
+  # is_pressed(button) foreign
+}
+
+foreign class MouseButtonEvent is Event {
+  window_id foreign
+  button foreign
+  pressed foreign
+  clicks foreign
+  coordinates foreign
+}
+
+foreign class MouseWheelEvent is Event {
+  window_id foreign
+  offset foreign
+}
+
+class WindowEvent is Event {
+  window_id foreign
+}
+
+foreign class __GenericWindowEvent is WindowEvent {
+}
+
+foreign class ResizeEvent is WindowEvent {
+  size foreign
+}
 
 class Mouse {
-
+  static LEFT foreign
+  static MIDDLE foreign
+  static RIGHT foreign
+  static X1 foreign
+  static X2 foreign
 }
 
 class Scancode {
-
+  static UNKNOWN foreign
+  static A foreign
+  static B foreign
+  static C foreign
+  static D foreign
+  static E foreign
+  static F foreign
+  static G foreign
+  static H foreign
+  static I foreign
+  static J foreign
+  static K foreign
+  static L foreign
+  static M foreign
+  static N foreign
+  static O foreign
+  static P foreign
+  static Q foreign
+  static R foreign
+  static S foreign
+  static T foreign
+  static U foreign
+  static V foreign
+  static W foreign
+  static X foreign
+  static Y foreign
+  static Z foreign
+  static NUM1 foreign
+  static NUM2 foreign
+  static NUM3 foreign
+  static NUM4 foreign
+  static NUM5 foreign
+  static NUM6 foreign
+  static NUM7 foreign
+  static NUM8 foreign
+  static NUM9 foreign
+  static NUM0 foreign
+  static RETURN foreign
+  static ESCAPE foreign
+  static BACKSPACE foreign
+  static TAB foreign
+  static SPACE foreign
+  static MINUS foreign
+  static EQUALS foreign
+  static LEFT_BRACKET foreign
+  static RIGHT_BRACKET foreign
+  static BACKSLASH foreign
+  static SEMICOLON foreign
+  static APOSTROPHE foreign
+  static GRAVE foreign
+  static COMMA foreign
+  static PERIOD foreign
+  static SLASH foreign
+  static CAPS_LOCK foreign
+  static F1 foreign
+  static F2 foreign
+  static F3 foreign
+  static F4 foreign
+  static F5 foreign
+  static F6 foreign
+  static F7 foreign
+  static F8 foreign
+  static F9 foreign
+  static F10 foreign
+  static F11 foreign
+  static F12 foreign
+  static PRINT_SCREEN foreign
+  static SCROLL_LOCK foreign
+  static PAUSE foreign
+  static INSERT foreign
+  static HOME foreign
+  static PAGE_UP foreign
+  static DELETE foreign
+  static END foreign
+  static PAGE_DOWN foreign
+  static RIGHT foreign
+  static LEFT foreign
+  static DOWN foreign
+  static UP foreign
+  static NUM_LOCK foreign
+  static NUMPAD_DIVIDE foreign
+  static NUMPAD_MULTIPLY foreign
+  static NUMPAD_MINUS foreign
+  static NUMPAD_PLUS foreign
+  static NUMPAD_ENTER foreign
+  static NUMPAD_1 foreign
+  static NUMPAD_2 foreign
+  static NUMPAD_3 foreign
+  static NUMPAD_4 foreign
+  static NUMPAD_5 foreign
+  static NUMPAD_6 foreign
+  static NUMPAD_7 foreign
+  static NUMPAD_8 foreign
+  static NUMPAD_9 foreign
+  static NUMPAD_0 foreign
+  static NUMPAD_PERIOD foreign
+  static APPLICATION foreign
 }
 
 class Keycode {
 
 }
 
-# class Keyboard {
-#   static scancode_name(scancode) foreign
-#   static keycode_name(keycode) foreign
-#   static localize(scancode) foreign
-#   static unlocalize(keycode) foreign
-# }
-#
-# class Modifier {
-#   static NONE foreign
-#   static LSHIFT foreign
-#   static RSHIFT foreign
-#   static SHIFT foreign
-# }
+class Keyboard {
+  static scancode_name(scancode) foreign
+  static keycode_name(keycode) foreign
+  static localize(scancode) foreign
+  static unlocalize(keycode) foreign
+}
+
+class Modifier {
+  static NONE foreign
+
+  static LSHIFT foreign
+  static RSHIFT foreign
+  static SHIFT foreign
+
+  static LCTRL foreign
+  static RCTRL foreign
+  static CTRL foreign
+
+  static LALT foreign
+  static RALT foreign
+  static ALT foreign
+
+  static LGUI foreign
+  static RGUI foreign
+  static GUI foreign
+
+  static NUM foreign
+  static CAPS foreign
+  static MODE foreign
+}

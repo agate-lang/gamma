@@ -10,6 +10,7 @@ struct GammaRectF;
 struct GammaRectI;
 
 bool gammaCheckInt(AgateVM *vm, ptrdiff_t slot, int *result);
+bool gammaCheckInt64(AgateVM *vm, ptrdiff_t slot, int64_t *result);
 bool gammaCheckFloat(AgateVM *vm, ptrdiff_t slot, float *result);
 
 bool gammaCheckForeign(AgateVM *vm, ptrdiff_t slot, uint64_t tag);

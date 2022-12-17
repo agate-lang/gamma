@@ -24,6 +24,8 @@ foreign class Vec2F {
   !=(other) foreign
 
   static (x, y) { Vec2F.new(x, y) }
+
+  to_s { "(%(.x), %(.y))" }
 }
 
 foreign class Vec2I {
@@ -47,6 +49,8 @@ foreign class Vec2I {
   !=(other) foreign
 
   static (x, y) { Vec2I.new(x, y) }
+
+  to_s { "(%(.x), %(.y))" }
 }
 
 foreign class Color {
@@ -134,6 +138,8 @@ foreign class RectF {
 
   static (x, y, w, h) { RectF.new(x, y, w, h) }
   static (w, h) { RectF.new(0.0, 0.0, w, h) }
+
+  to_s { "(%(.x), %(.y), %(.w), %(.h))" }
 }
 
 foreign class RectI {
