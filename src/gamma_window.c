@@ -8,6 +8,7 @@
 #include "gamma_error.h"
 #include "gamma_root.h"
 #include "gamma_tags.h"
+#include "gamma_utils.h"
 
 /*
  * Window
@@ -122,10 +123,7 @@ static void gammaWindowGetPosition(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
   struct GammaWindow *window = agateSlotGetForeign(vm, 0);
 
-  ptrdiff_t class_slot = agateSlotAllocate(vm);
-  agateGetVariable(vm, "gamma", "Vec2I", class_slot);
-  struct GammaVec2I *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
-
+  struct GammaVec2I *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2I");
   SDL_GetWindowPosition(window->ptr, &result->v[0], &result->v[1]);
 }
 
@@ -149,10 +147,7 @@ static void gammaWindowGetSize(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
   struct GammaWindow *window = agateSlotGetForeign(vm, 0);
 
-  ptrdiff_t class_slot = agateSlotAllocate(vm);
-  agateGetVariable(vm, "gamma", "Vec2I", class_slot);
-  struct GammaVec2I *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
-
+  struct GammaVec2I *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2I");
   SDL_GetWindowSize(window->ptr, &result->v[0], &result->v[1]);
 }
 
@@ -176,10 +171,7 @@ static void gammaWindowGetFramebufferSize(AgateVM *vm) {
   assert(agateSlotGetForeignTag(vm, 0) == GAMMA_WINDOW_TAG);
   struct GammaWindow *window = agateSlotGetForeign(vm, 0);
 
-  ptrdiff_t class_slot = agateSlotAllocate(vm);
-  agateGetVariable(vm, "gamma", "Vec2I", class_slot);
-  struct GammaVec2I *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
-
+  struct GammaVec2I *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2I");
   SDL_GL_GetDrawableSize(window->ptr, &result->v[0], &result->v[1]);
 }
 

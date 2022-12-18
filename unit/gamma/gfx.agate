@@ -63,33 +63,31 @@ class Origin {
   static BOTTOM_RIGHT   { Vec2F.new(1.0, 1.0) }
 }
 
-# foreign class Transform {
-#   construct new() foreign
-#   construct new(position) foreign
-#   construct new(position, origin) foreign
-#   construct new(position, origin, angle) foreign
-#
-#   origin foreign
-#   origin=(value) foreign
-#
-#   position foreign
-#   position=(value) foreign
-#   move(offset) foreign
-#   move(x, y) foreign
-#
-#   rotation foreign
-#   rotation=(value) foreign
-#   rotate(angle) foreign
-#
-#   scale foreign
-#   scale=(value) foreign
-#   scale(factor) foreign
-#   scale(sx, sy) foreign
-#
-#   static (position) { Transform.new(position) }
-#   static (position, origin) { Transform.new(position, origin) }
-#   static (position, origin, angle) { Transform.new(position, origin, angle) }
-# }
+foreign class Transform {
+  construct new() foreign
+  construct new(position) foreign
+  construct new(position, origin) foreign
+  construct new(position, origin, angle) foreign
+
+  origin foreign
+  origin=(value) foreign
+
+  position foreign
+  position=(value) foreign
+  move(offset) foreign
+
+  rotation foreign
+  rotation=(value) foreign
+  rotate(angle) foreign
+
+  scale foreign
+  scale=(value) foreign
+  scale(factor) foreign
+
+  static (position) { Transform.new(position) }
+  static (position, origin) { Transform.new(position, origin) }
+  static (position, origin, angle) { Transform.new(position, origin, angle) }
+}
 
 foreign class Renderer {
   construct new(window) foreign
@@ -109,15 +107,12 @@ foreign class Renderer {
 #   draw_rect(rect, color, outline_thickness, outline_color) foreign
 #
 #   draw_circle(center, radius, color) foreign
-#   draw_circle(cx, cy, radius, color) foreign
 #   draw_circle(center, radius, color, outline_thickness, outline_color) foreign
-#   draw_circle(cx, cy, radius, color, outline_thickness, outline_color) foreign
 #
 #   draw_polygon(points, color) foreign
 #   draw_polygon(points, color, outline_thickness, outline_color) foreign
 #
-#   draw_line(p0, p1, color) foreign
-#   draw_line(x0, y0, x1, y1, color) foreign
+#   draw_line(p0, p1, color, width) foreign
 #
 #   draw_loop(points, color, width) foreign
 #   draw_chain(points, color, width) foreign

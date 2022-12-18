@@ -128,9 +128,9 @@ foreign class RectF {
   h=(value) foreign
 
   position foreign
-  size foreign
-
   position=(value) foreign
+
+  size foreign
   size=(value) foreign
 
   contains(other) foreign
@@ -158,21 +158,12 @@ foreign class RectI {
   h=(value) foreign
 
   position foreign
+  position=(value) foreign
+
   size foreign
+  size=(value) foreign
 
-#   top_left foreign
-#   top_center foreign
-#   top_right foreign
-#   center_left foreign
-#   center foreign
-#   center_right foreign
-#   bottom_left foreign
-#   bottom_center foreign
-#   bottom_right foreign
-
-#   contains(x, y) foreign
   contains(other) foreign
-
   intersects(other) foreign
 
   static (x, y, w, h) { RectI.new(x, y, w, h) }

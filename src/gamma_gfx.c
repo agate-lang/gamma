@@ -16,6 +16,7 @@
 #include "gamma_error.h"
 #include "gamma_root.h"
 #include "gamma_tags.h"
+#include "gamma_utils.h"
 #include "gamma_window.h"
 
 #include "shaders/default.vert.h"
@@ -141,10 +142,7 @@ static void gammaImageSubscriptGetter(AgateVM *vm) {
     return;
   }
 
-  ptrdiff_t class_slot = agateSlotAllocate(vm);
-  agateGetVariable(vm, "gamma", "Color", class_slot);
-  struct GammaColor *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
-
+  struct GammaColor *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Color");
   gammaImageRawGet(image, x, y, result);
 }
 
@@ -516,10 +514,7 @@ static void gammaCameraGetSize(AgateVM *vm) {
   assert(gammaCheckForeign(vm, 0, GAMMA_CAMERA_TAG));
   struct GammaCamera *camera = agateSlotGetForeign(vm, 0);
 
-  ptrdiff_t class_slot = agateSlotAllocate(vm);
-  agateGetVariable(vm, "gamma", "Vec2F", class_slot);
-  struct GammaVec2F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
-
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
   *result = camera->expected_size;
 }
 
@@ -537,10 +532,7 @@ static void gammaCameraGetCenter(AgateVM *vm) {
   assert(gammaCheckForeign(vm, 0, GAMMA_CAMERA_TAG));
   struct GammaCamera *camera = agateSlotGetForeign(vm, 0);
 
-  ptrdiff_t class_slot = agateSlotAllocate(vm);
-  agateGetVariable(vm, "gamma", "Vec2F", class_slot);
-  struct GammaVec2F *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
-
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
   *result = camera->center;
 }
 
@@ -663,10 +655,7 @@ static void gammaCameraGetViewport(AgateVM *vm) {
   assert(gammaCheckForeign(vm, 0, GAMMA_CAMERA_TAG));
   struct GammaCamera *camera = agateSlotGetForeign(vm, 0);
 
-  ptrdiff_t class_slot = agateSlotAllocate(vm);
-  agateGetVariable(vm, "gamma", "RectF", class_slot);
-  struct GammaRectF *result = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
-
+  struct GammaRectF *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "RectF");
   *result = camera->expected_viewport;
 }
 
@@ -678,6 +667,250 @@ static void gammaCameraSetViewport(AgateVM *vm) {
     gammaError(vm, "RectF parameter expected for `value`.");
     return;
   }
+}
+
+/*
+ * Transform
+ */
+
+struct GammaTransform {
+  struct GammaVec2F origin;
+  struct GammaVec2F position;
+  float rotation;
+  struct GammaVec2F scale;
+};
+
+// raw
+
+static void gammaTransformComputeMatrix(const struct GammaTransform *transform, struct GammaVec2F bounds, struct GammaMat3F *mat) {
+  float ox = transform->origin.v[0] * bounds.v[0];
+  float oy = transform->origin.v[1] * bounds.v[1];
+  float px = transform->position.v[0];
+  float py = transform->position.v[1];
+  float cos_v = cosf(transform->rotation);
+  float sin_v = sinf(transform->rotation);
+  float sx = transform->scale.v[0];
+  float sy = transform->scale.v[1];
+
+  mat->m[0][0] = sx * cos_v; mat->m[1][0] = - sy * sin_v; mat->m[2][0] = - ox * mat->m[0][0] - oy * mat->m[1][0] + px;
+  mat->m[0][1] = sx * sin_v; mat->m[1][1] =   sy * cos_v; mat->m[2][1] = - ox * mat->m[0][1] - oy * mat->m[1][1] + py;
+  mat->m[0][2] = 0.0f;       mat->m[1][2] = 0.0f;         mat->m[2][2] = 1.0f;
+}
+
+// class
+
+static ptrdiff_t gammaTransformAllocate(AgateVM *vm, const char *unit_name, const char *class_name) {
+  return sizeof(struct GammaTransform);
+}
+
+static uint64_t gammaTransformTag(AgateVM *vm, const char *unit_name, const char *class_name) {
+  return GAMMA_TRANSFORM_TAG;
+}
+
+// methods
+
+static void gammaTransformNew0(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  transform->origin = gammaVec2FZero;
+  transform->position = gammaVec2FZero;
+  transform->rotation = 0.0f;
+  transform->scale = gammaVec2FOne;
+}
+
+static void gammaTransformNew1(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2F position;
+
+  if (!gammaCheckVec2F(vm, 1, &position)) {
+    gammaError(vm, "Vec2F parameter expected for `position`.");
+    return;
+  }
+
+  transform->origin = gammaVec2FZero;
+  transform->position = position;
+  transform->rotation = 0.0f;
+  transform->scale = gammaVec2FOne;
+}
+
+static void gammaTransformNew2(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2F position;
+
+  if (!gammaCheckVec2F(vm, 1, &position)) {
+    gammaError(vm, "Vec2F parameter expected for `position`.");
+    return;
+  }
+
+  struct GammaVec2F origin;
+
+  if (!gammaCheckVec2F(vm, 2, &origin)) {
+    gammaError(vm, "Vec2F parameter expected for `origin`.");
+    return;
+  }
+
+  transform->origin = origin;
+  transform->position = position;
+  transform->rotation = 0.0f;
+  transform->scale = gammaVec2FOne;
+}
+
+static void gammaTransformNew3(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2F position;
+
+  if (!gammaCheckVec2F(vm, 1, &position)) {
+    gammaError(vm, "Vec2F parameter expected for `position`.");
+    return;
+  }
+
+  struct GammaVec2F origin;
+
+  if (!gammaCheckVec2F(vm, 2, &origin)) {
+    gammaError(vm, "Vec2F parameter expected for `origin`.");
+    return;
+  }
+
+  float rotation;
+
+  if (!gammaCheckFloat(vm, 3, &rotation)) {
+    gammaError(vm, "Float parameter expected for `angle`.");
+    return;
+  }
+
+  transform->origin = origin;
+  transform->position = position;
+  transform->rotation = rotation;
+  transform->scale = gammaVec2FOne;
+}
+
+static void gammaTransformGetOrigin(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  *result = transform->origin;
+}
+
+static void gammaTransformSetOrigin(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  if (!gammaCheckVec2F(vm, 1, &transform->origin)) {
+    gammaError(vm, "Vec2F parameter expected for `value`.");
+    return;
+  }
+
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaTransformGetPosition(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  *result = transform->position;
+}
+
+static void gammaTransformSetPosition(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  if (!gammaCheckVec2F(vm, 1, &transform->position)) {
+    gammaError(vm, "Vec2F parameter expected for `value`.");
+    return;
+  }
+
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaTransformMove(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2F offset;
+
+  if (!gammaCheckVec2F(vm, 1, &offset)) {
+    gammaError(vm, "Vec2F parameter expected for `offset`.");
+    return;
+  }
+
+  transform->position.v[0] += offset.v[0];
+  transform->position.v[1] += offset.v[1];
+}
+
+static void gammaTransformGetRotation(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+  agateSlotSetFloat(vm, AGATE_RETURN_SLOT, transform->rotation);
+}
+
+static void gammaTransformSetRotation(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  if (!gammaCheckFloat(vm, 1, &transform->rotation)) {
+    gammaError(vm, "Float parameter expected for `value`.");
+    return;
+  }
+
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaTransformRotate(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  float angle;
+
+  if (!gammaCheckFloat(vm, 1, &angle)) {
+    gammaError(vm, "Float parameter expected for `angle`.");
+    return;
+  }
+
+  transform->rotation += angle;
+}
+
+static void gammaTransformGetScale(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  *result = transform->scale;
+}
+
+static void gammaTransformSetScale(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  if (!gammaCheckVec2F(vm, 1, &transform->scale)) {
+    gammaError(vm, "Vec2F parameter expected for `value`.");
+    return;
+  }
+
+  agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
+}
+
+static void gammaTransformScale(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
+  struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2F factor;
+
+  if (!gammaCheckVec2F(vm, 1, &factor)) {
+    gammaError(vm, "Vec2F parameter expected for `factor`.");
+    return;
+  }
+
+  transform->scale.v[0] *= factor.v[0];
+  transform->scale.v[1] *= factor.v[1];
 }
 
 /*
@@ -1073,6 +1306,12 @@ AgateForeignClassHandler gammaGfxClassHandler(AgateVM *vm, const char *unit_name
     return handler;
   }
 
+  if (gammaEquals(class_name, "Transform")) {
+    handler.allocate = gammaTransformAllocate;
+    handler.tag = gammaTransformTag;
+    return handler;
+  }
+
   return handler;
 }
 
@@ -1124,6 +1363,27 @@ AgateForeignMethodFunc gammaGfxMethodHandler(AgateVM *vm, const char *unit_name,
       if (gammaEquals(signature, "vsynced=(_)")) { return gammaRendererSetVsynced; }
     }
   }
+
+  if (gammaEquals(class_name, "Transform")) {
+    if (kind == AGATE_FOREIGN_METHOD_INSTANCE) {
+      if (gammaEquals(signature, "init new()")) { return gammaTransformNew0; }
+      if (gammaEquals(signature, "init new(_)")) { return gammaTransformNew1; }
+      if (gammaEquals(signature, "init new(_,_)")) { return gammaTransformNew2; }
+      if (gammaEquals(signature, "init new(_,_,_)")) { return gammaTransformNew3; }
+      if (gammaEquals(signature, "origin")) { return gammaTransformGetOrigin; }
+      if (gammaEquals(signature, "origin=(_)")) { return gammaTransformSetOrigin; }
+      if (gammaEquals(signature, "position")) { return gammaTransformGetPosition; }
+      if (gammaEquals(signature, "position=(_)")) { return gammaTransformSetPosition; }
+      if (gammaEquals(signature, "move(_)")) { return gammaTransformMove; }
+      if (gammaEquals(signature, "rotation")) { return gammaTransformGetRotation; }
+      if (gammaEquals(signature, "rotation=(_)")) { return gammaTransformSetRotation; }
+      if (gammaEquals(signature, "rotate(_)")) { return gammaTransformRotate; }
+      if (gammaEquals(signature, "scale")) { return gammaTransformGetScale; }
+      if (gammaEquals(signature, "scale=(_)")) { return gammaTransformSetScale; }
+      if (gammaEquals(signature, "scale(_)")) { return gammaTransformScale; }
+    }
+  }
+
 
   return NULL;
 }

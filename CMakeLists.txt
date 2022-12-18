@@ -31,6 +31,7 @@ add_executable(gamma
   src/gamma_gfx.c
   src/gamma_root.c
   src/gamma_time.c
+  src/gamma_utils.c
   src/gamma_window.c
 
   vendor/agate/agate.c
