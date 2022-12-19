@@ -42,6 +42,8 @@ struct GammaMat3F {
 
 void gammaMat3FRawTranslation(struct GammaMat3F *mat, struct GammaVec2F offset);
 void gammaMat3FRawMul(struct GammaMat3F *result, struct GammaMat3F *lhs, struct GammaMat3F *rhs);
+void gammaMat3FRawTransformPoint(struct GammaVec2F *result, struct GammaMat3F *lhs, struct GammaVec2F *rhs);
+bool gammaMat3FRawInverse(struct GammaMat3F *result, const struct GammaMat3F *mat);
 
 AgateForeignClassHandler gammaRootClassHandler(AgateVM *vm, const char *unit_name, const char *class_name);
 AgateForeignMethodFunc gammaRootMethodHandler(AgateVM *vm, const char *unit_name, const char *class_name, AgateForeignMethodKind kind, const char *signature);

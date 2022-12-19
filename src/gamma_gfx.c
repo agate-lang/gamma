@@ -106,9 +106,9 @@ static GLuint gammaShaderRawCompileProgram(const char *vertex_source, const char
  * Camera
  */
 
-static const struct GammaRectF gammaDefaultViewport = { {{ 0.0f, 0.0f }}, {{ 1.0f, 1.0f }} };
 static const struct GammaVec2F gammaVec2FZero = {{ 0.0f, 0.0f }};
 static const struct GammaVec2F gammaVec2FOne = {{ 1.0f, 1.0f }};
+static const struct GammaRectF gammaDefaultViewport = { gammaVec2FZero, gammaVec2FOne };
 
 enum GammaCameraType {
   GAMMA_CAMERA_EXTEND,
@@ -280,6 +280,13 @@ static void gammaCameraRawComputeViewMatrix(const struct GammaCamera *camera, st
   mat->m[0][0] =  sx * cos_v; mat->m[1][0] = sx * sin_v; mat->m[2][0] = sx * (- tx * cos_v - ty * sin_v);
   mat->m[0][1] = -sy * sin_v; mat->m[1][1] = sy * cos_v; mat->m[2][1] = sy * (  tx * sin_v - ty * cos_v);
   mat->m[0][2] = 0.0f;        mat->m[1][2] = 0.0f;       mat->m[2][2] = 1.0f;
+}
+
+static void gammaCameraRawComputeViewport(const struct GammaCamera *camera, struct GammaVec2I framebuffer_size, struct GammaRectI *viewport) {
+  viewport->position.v[0] = (int) (framebuffer_size.v[0] * camera->computed_viewport.position.v[0] + 0.5f);
+  viewport->position.v[1] = (int) (framebuffer_size.v[1] * camera->computed_viewport.position.v[1] + 0.5f);
+  viewport->size.v[0] = (int) (framebuffer_size.v[0] * camera->computed_viewport.size.v[0] + 0.5f);
+  viewport->size.v[1] = (int) (framebuffer_size.v[1] * camera->computed_viewport.size.v[1] + 0.5f);
 }
 
 // class
@@ -943,6 +950,72 @@ static void gammaRendererRawDraw(const struct GammaRenderer *renderer, const str
   }
 }
 
+static struct GammaVec2I gammaRendererRawWorldToDevice(const struct GammaRenderer *renderer, const struct GammaCamera *camera, struct GammaVec2F position) {
+  struct GammaRectI viewport;
+  gammaCameraRawComputeViewport(camera, renderer->framebuffer_size, &viewport);
+
+  /* apply view transform
+   * i.e. compute normalized device coordinates from world coordinates
+   */
+
+  struct GammaMat3F view;
+  gammaCameraRawComputeViewMatrix(camera, &view);
+
+  struct GammaVec2F normalized;
+  gammaMat3FRawTransformPoint(&normalized, &view, &position);
+
+  /* simulate projection transform
+   * i.e. compute screen coordinates from normalized device coordinates
+   *
+   *  1 +---------+     0 +---------+
+   *    |         |       |         |
+   *    |         | ===>  |         |
+   *    |         |       |         |
+   * -1 +---------+     h +---------+
+   *   -1         1       0         w
+   */
+
+  struct GammaVec2I result;
+  result.v[0] = (int) (1 + normalized.v[0] / 2 * viewport.size.v[0] + viewport.position.v[0]);
+  result.v[1] = (int) (1 - normalized.v[1] / 2 * viewport.size.v[1] + viewport.position.v[1]);
+  return result;
+}
+
+static struct GammaVec2F gammaRendererRawDeviceToWorld(const struct GammaRenderer *renderer, const struct GammaCamera *camera, struct GammaVec2I coordinates) {
+  struct GammaRectI viewport;
+  gammaCameraRawComputeViewport(camera, renderer->framebuffer_size, &viewport);
+
+  /* simulate inverse projection transform
+   * i.e. compute normalized device coordinates from screen coordinates
+   *
+   * 0 +---------+      1 +---------+
+   *   |         |        |         |
+   *   |         | ===>   |         |
+   *   |         |        |         |
+   * h +---------+     -1 +---------+
+   *   0         w       -1         1
+   */
+
+  struct GammaVec2F normalized;
+  normalized.v[0] = 2.0f * (coordinates.v[0] - viewport.position.v[0]) / viewport.size.v[0] - 1.0f;
+  normalized.v[1] = 1.0f - 2.0f * (coordinates.v[1] - viewport.position.v[1]) / viewport.size.v[1];
+
+  /* apply inverse view transform
+   * i.e. compute world coordinates from normalized device coordinates
+   */
+
+  struct GammaMat3F view;
+  gammaCameraRawComputeViewMatrix(camera, &view);
+
+  struct GammaMat3F inverse_view;
+  bool ok = gammaMat3FRawInverse(&inverse_view, &view);
+  assert(ok);
+
+  struct GammaVec2F result;
+  gammaMat3FRawTransformPoint(&result, &inverse_view, &normalized);
+  return result;
+}
+
 // class
 
 static ptrdiff_t gammaRendererAllocate(AgateVM *vm, const char *unit_name, const char *class_name) {
@@ -975,6 +1048,10 @@ static void gammaRendererNew(AgateVM *vm) {
 }
 
 static void gammaRendererClear0(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_RENDERER_TAG));
+  struct GammaRenderer *renderer = agateSlotGetForeign(vm, 0);
+
+  glScissor(0, 0, renderer->framebuffer_size.v[0], renderer->framebuffer_size.v[1]);
   glClear(GL_COLOR_BUFFER_BIT);
 }
 
@@ -1003,10 +1080,96 @@ static void gammaRendererSetCamera(AgateVM *vm) {
     return;
   }
 
-  struct GammaCamera *camera = agateSlotGetForeign(vm, 1);
+  const struct GammaCamera *camera = agateSlotGetForeign(vm, 1);
 
   renderer->camera = *camera;
+
+  SDL_GL_GetDrawableSize(SDL_GL_GetCurrentWindow(), &renderer->framebuffer_size.v[0], &renderer->framebuffer_size.v[1]);
   gammaCameraRawUpdate(&renderer->camera, renderer->framebuffer_size);
+
+  struct GammaRectI viewport;
+  gammaCameraRawComputeViewport(&renderer->camera, renderer->framebuffer_size, &viewport);
+  viewport.position.v[1] = renderer->framebuffer_size.v[1] - (viewport.position.v[1] + viewport.size.v[1]); // invert y
+
+  // set the viewport everytime a new camera is defined
+  glViewport(viewport.position.v[0], viewport.position.v[1], viewport.size.v[0], viewport.size.v[1]);
+
+  // the viewport does not scissor
+  glScissor(viewport.position.v[0], viewport.position.v[1], viewport.size.v[0], viewport.size.v[1]);
+}
+
+static void gammaRendererWorldToDevice1(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_RENDERER_TAG));
+  struct GammaRenderer *renderer = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2F position;
+
+  if (!gammaCheckVec2F(vm, 1, &position)) {
+    gammaError(vm, "Vec2F parameter expected for `position`.");
+    return;
+  }
+
+  struct GammaVec2I *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2I");
+  *result = gammaRendererRawWorldToDevice(renderer, &renderer->camera, position);
+}
+
+static void gammaRendererWorldToDevice2(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_RENDERER_TAG));
+  struct GammaRenderer *renderer = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2F position;
+
+  if (!gammaCheckVec2F(vm, 1, &position)) {
+    gammaError(vm, "Vec2F parameter expected for `position`.");
+    return;
+  }
+
+  if (!gammaCheckForeign(vm, 2, GAMMA_CAMERA_TAG)) {
+    gammaError(vm, "Camera parameter expected for `camera`.");
+    return;
+  }
+
+  const struct GammaCamera *camera = agateSlotGetForeign(vm, 2);
+
+  struct GammaVec2I *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2I");
+  *result = gammaRendererRawWorldToDevice(renderer, camera, position);
+}
+
+static void gammaRendererDeviceToWorld1(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_RENDERER_TAG));
+  struct GammaRenderer *renderer = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2I coordinates;
+
+  if (!gammaCheckVec2I(vm, 1, &coordinates)) {
+    gammaError(vm, "Vec2I parameter expected for `coordinates`.");
+    return;
+  }
+
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  *result = gammaRendererRawDeviceToWorld(renderer, &renderer->camera, coordinates);
+}
+
+static void gammaRendererDeviceToWorld2(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_RENDERER_TAG));
+  struct GammaRenderer *renderer = agateSlotGetForeign(vm, 0);
+
+  struct GammaVec2I coordinates;
+
+  if (!gammaCheckVec2I(vm, 1, &coordinates)) {
+    gammaError(vm, "Vec2I parameter expected for `coordinates`.");
+    return;
+  }
+
+  if (!gammaCheckForeign(vm, 2, GAMMA_CAMERA_TAG)) {
+    gammaError(vm, "Camera parameter expected for `camera`.");
+    return;
+  }
+
+  const struct GammaCamera *camera = agateSlotGetForeign(vm, 2);
+
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  *result = gammaRendererRawDeviceToWorld(renderer, camera, coordinates);
 }
 
 static void gammaRendererDrawObject(AgateVM *vm) {
@@ -1074,7 +1237,7 @@ static void gammaRendererDrawRect2(AgateVM *vm) {
   glBindBuffer(GL_ARRAY_BUFFER, 0);
 
   data.element_buffer = 0;
-  data.format = GAMMA_TEXTURE_ALPHA;
+  data.format = GAMMA_TEXTURE_COLOR;
   data.texture0 = 0;
   data.texture1 = 0;
   data.shader = 0;
@@ -1180,6 +1343,10 @@ AgateForeignMethodFunc gammaGfxMethodHandler(AgateVM *vm, const char *unit_name,
       if (gammaEquals(signature, "clear(_)")) { return gammaRendererClear1; }
       if (gammaEquals(signature, "display()")) { return gammaRendererDisplay; }
       if (gammaEquals(signature, "camera=(_)")) { return gammaRendererSetCamera; }
+      if (gammaEquals(signature, "world_to_device(_)")) { return gammaRendererWorldToDevice1; }
+      if (gammaEquals(signature, "world_to_device(_,_)")) { return gammaRendererWorldToDevice2; }
+      if (gammaEquals(signature, "device_to_world(_)")) { return gammaRendererDeviceToWorld1; }
+      if (gammaEquals(signature, "device_to_world(_,_)")) { return gammaRendererDeviceToWorld2; }
       if (gammaEquals(signature, "draw_object(_,_)")) { return gammaRendererDrawObject; }
       if (gammaEquals(signature, "draw_rect(_,_)")) { return gammaRendererDrawRect2; }
       if (gammaEquals(signature, "vsynced")) { return gammaRendererIsVsynced; }

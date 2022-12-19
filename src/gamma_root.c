@@ -994,6 +994,37 @@ void gammaMat3FRawMul(struct GammaMat3F *result, struct GammaMat3F *lhs, struct 
   }
 }
 
+void gammaMat3FRawTransformPoint(struct GammaVec2F *result, struct GammaMat3F *lhs, struct GammaVec2F *rhs) {
+  result->v[0] = lhs->m[0][0] * rhs->v[0] + lhs->m[1][0] * rhs->v[1] +  lhs->m[2][0];
+  result->v[1] = lhs->m[0][1] * rhs->v[1] + lhs->m[1][1] * rhs->v[1] +  lhs->m[2][1];
+}
+
+bool gammaMat3FRawInverse(struct GammaMat3F *result, const struct GammaMat3F *mat) {
+  result->m[0][0] = mat->m[1][1] * mat->m[2][2] - mat->m[1][2] * mat->m[2][1];
+  result->m[1][0] = - (mat->m[1][0] * mat->m[2][2] - mat->m[1][2] * mat->m[2][0]);
+  result->m[2][0] = mat->m[1][0] * mat->m[2][1] - mat->m[1][1] * mat->m[2][0];
+  result->m[0][1] = - (mat->m[0][1] * mat->m[2][2] - mat->m[0][2] * mat->m[2][1]);
+  result->m[1][1] = mat->m[0][0] * mat->m[2][2] - mat->m[0][2] * mat->m[2][0];
+  result->m[2][1] = - (mat->m[0][0] * mat->m[2][1] - mat->m[0][1] * mat->m[2][0]);
+  result->m[0][2] = mat->m[0][1] * mat->m[1][2] - mat->m[0][2] * mat->m[1][1];
+  result->m[1][2] = - (mat->m[0][0] * mat->m[1][2] - mat->m[0][2] * mat->m[1][0]);
+  result->m[2][2] = mat->m[0][0] * mat->m[1][1] - mat->m[0][1] * mat->m[1][0];
+
+  float det = mat->m[0][0] * result->m[0][0] + mat->m[1][0] * result->m[0][1] + mat->m[2][0] * result->m[0][2];
+
+  if (fabsf(det) < FLT_EPSILON) {
+    return false;
+  }
+
+  for (int col = 0; col < 3; ++col) {
+    for (int row = 0; row < 3; ++row) {
+      result->m[col][row] /= det;
+    }
+  }
+
+  return true;
+}
+
 // class
 
 static ptrdiff_t gammaMat3FAllocate(AgateVM *vm, const char *unit_name, const char *class_name) {

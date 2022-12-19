@@ -77,6 +77,12 @@ foreign class Renderer {
 
   camera=(value) foreign
 
+  world_to_device(position) foreign
+  world_to_device(position, camera) foreign
+
+  device_to_world(coordinates) foreign
+  device_to_world(coordinates, camera) foreign
+
   draw_object(object, transform) foreign
 
   draw(object, position) { .draw_object(object, Transform(position)) }
