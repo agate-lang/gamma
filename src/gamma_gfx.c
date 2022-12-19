@@ -108,7 +108,7 @@ static GLuint gammaShaderRawCompileProgram(const char *vertex_source, const char
 
 static const struct GammaVec2F gammaVec2FZero = {{ 0.0f, 0.0f }};
 static const struct GammaVec2F gammaVec2FOne = {{ 1.0f, 1.0f }};
-static const struct GammaRectF gammaDefaultViewport = { gammaVec2FZero, gammaVec2FOne };
+static const struct GammaRectF gammaDefaultViewport = { {{ 0.0f, 0.0f }}, {{ 1.0f, 1.0f }} };
 
 enum GammaCameraType {
   GAMMA_CAMERA_EXTEND,
