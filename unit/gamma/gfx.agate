@@ -4,26 +4,6 @@
 
 import "gamma" for Vec2F
 
-foreign class Image {
-  construct from_file(filename) foreign
-
-  [position] { this[position.x, position.y] }
-  [x, y] foreign
-
-  [position]=(color) { this[position.x, position.y] = color }
-  [x, y]=(color) foreign
-}
-
-foreign class Texture {
-#   construct from_file(filename) foreign
-
-}
-
-# foreign class Shader {
-#   construct new(vertex, fragment) foreign
-#   set_uniform(name, value) foreign
-# }
-
 foreign class Camera {
   construct new_extend(center, size) foreign
   construct new_fill(center, size) foreign
@@ -97,11 +77,11 @@ foreign class Renderer {
 
   camera=(value) foreign
 
-#   draw_object(object, transform) foreign
-#
-#   draw(object, position) { .draw_object(object, Transform(position)) }
-#   draw(object, position, origin) { .draw_object(object, Transform(position, origin)) }
-#   draw(object, position, origin, angle) { .draw_object(object, Transform(position, origin, angle)) }
+  draw_object(object, transform) foreign
+
+  draw(object, position) { .draw_object(object, Transform(position)) }
+  draw(object, position, origin) { .draw_object(object, Transform(position, origin)) }
+  draw(object, position, origin, angle) { .draw_object(object, Transform(position, origin, angle)) }
 
   draw_rect(rect, color) foreign
 #   draw_rect(rect, color, outline_thickness, outline_color) foreign

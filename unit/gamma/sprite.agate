@@ -1,0 +1,18 @@
+# gamma, GAMes Made with Agate
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2022 Julien Bernard
+
+foreign class Image {
+  construct from_file(filename) foreign
+
+  [position] { this[position.x, position.y] }
+  [x, y] foreign
+
+  [position]=(color) { this[position.x, position.y] = color }
+  [x, y]=(color) foreign
+}
+
+foreign class Texture {
+#   construct from_file(filename) foreign
+
+}

@@ -30,6 +30,7 @@ add_executable(gamma
   src/gamma_event.c
   src/gamma_gfx.c
   src/gamma_root.c
+  src/gamma_sprite.c
   src/gamma_time.c
   src/gamma_utils.c
   src/gamma_window.c
