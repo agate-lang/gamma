@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 Julien Bernard
 
+import "gamma/render"
+
 foreign class Image {
   construct from_file(filename) foreign
 

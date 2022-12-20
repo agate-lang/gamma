@@ -11,15 +11,6 @@ struct GammaVec2I {
   int v[2];
 };
 
-struct GammaColor {
-  float r;
-  float g;
-  float b;
-  float a;
-};
-
-void gammaColorRawFromRgba(struct GammaColor *color, int64_t rgba);
-
 struct GammaRectF {
   struct GammaVec2F position;
   struct GammaVec2F size;

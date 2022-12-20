@@ -4,6 +4,65 @@
 
 import "gamma/math" for Vec2F
 
+foreign class Color {
+  construct new(r, g, b, a) foreign
+  construct rgba32(value) foreign
+
+  r foreign
+  g foreign
+  b foreign
+  a foreign
+
+  r=(value) foreign
+  g=(value) foreign
+  b=(value) foreign
+  a=(value) foreign
+
+  +(other) foreign
+  -(other) foreign
+  *(other) foreign
+  /(other) foreign
+
+  ==(other) foreign
+  !=(other) foreign
+
+  darker(ratio) foreign
+  darker() { .darker(0.5) }
+  lighter(ratio) foreign
+  lighter() { .lighter(0.5) }
+
+  normalize() foreign
+
+  to_s { "(%(.r), %(.g), %(.b), %(.a))" }
+
+  static lerp(color0, color1, ratio) foreign
+
+  static BLACK      { Color.new(0.0, 0.0, 0.0, 1.0) }
+  static WHITE      { Color.new(1.0, 1.0, 1.0, 1.0) }
+
+  static RED        { Color.new(1.0, 0.0, 0.0, 1.0) }
+  static GREEN      { Color.new(0.0, 1.0, 0.0, 1.0) }
+  static BLUE       { Color.new(0.0, 0.0, 1.0, 1.0) }
+
+  static CYAN       { Color.new(0.0, 1.0, 1.0, 1.0) }
+  static MAGENTA    { Color.new(1.0, 0.0, 1.0, 1.0) }
+  static YELLOW     { Color.new(1.0, 1.0, 0.0, 1.0) }
+
+  static ORANGE     { Color.new(1.0, 0.5, 0.0, 1.0) }
+  static ROSE       { Color.new(1.0, 0.0, 0.5, 1.0) }
+  static CHARTREUSE { Color.new(0.5, 1.0, 0.0, 1.0) }
+  static SPRING     { Color.new(0.0, 1.0, 0.5, 1.0) }
+  static VIOLET     { Color.new(0.5, 0.0, 1.0, 1.0) }
+  static AZURE      { Color.new(0.0, 0.5, 1.0, 1.0) }
+
+  static TRANSPARENT { Color.new(0.0, 0.0, 0.0, 0.0) }
+  static OPAQUE(val) { Color.new(1.0, 1.0, 1.0, val) }
+  static GRAY(val)  { Color.new(val, val, val, 1.0) }
+
+  static (r, g, b) { Color.new(r, g, b, 1.0) }
+  static (r, g, b, a) { Color.new(r, g, b, a) }
+}
+
 foreign class Camera {
   construct new_extend(center, size) foreign
   construct new_fill(center, size) foreign

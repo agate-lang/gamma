@@ -7,6 +7,7 @@
 #include "gamma_common.h"
 #include "gamma_error.h"
 #include "gamma_math.h"
+#include "gamma_render.h"
 #include "gamma_tags.h"
 #include "gamma_utils.h"
 
