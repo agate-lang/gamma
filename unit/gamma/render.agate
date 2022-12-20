@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 Julien Bernard
 
-import "gamma" for Vec2F
+import "gamma/math" for Vec2F
 
 foreign class Camera {
   construct new_extend(center, size) foreign

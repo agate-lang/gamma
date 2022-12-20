@@ -11,8 +11,8 @@
 
 #include "gamma_common.h"
 #include "gamma_event.h"
-#include "gamma_gfx.h"
-#include "gamma_root.h"
+#include "gamma_math.h"
+#include "gamma_render.h"
 #include "gamma_time.h"
 #include "gamma_window.h"
 
@@ -81,15 +81,15 @@ int main(int argc, char *argv[]) {
 
   agateExUnitAddIncludePath(vm, GAMMA_UNIT_DIRECTORY);
 
-  agateExForeignClassAddHandler(vm, gammaRootClassHandler, "gamma");
   agateExForeignClassAddHandler(vm, gammaEventClassHandler, "gamma/event");
-  agateExForeignClassAddHandler(vm, gammaGfxClassHandler, "gamma/gfx");
+  agateExForeignClassAddHandler(vm, gammaMathClassHandler, "gamma/math");
+  agateExForeignClassAddHandler(vm, gammaRenderClassHandler, "gamma/render");
   agateExForeignClassAddHandler(vm, gammaWindowClassHandler, "gamma/window");
 
 
-  agateExForeignMethodAddHandler(vm, gammaRootMethodHandler, "gamma");
   agateExForeignMethodAddHandler(vm, gammaEventMethodHandler, "gamma/event");
-  agateExForeignMethodAddHandler(vm, gammaGfxMethodHandler, "gamma/gfx");
+  agateExForeignMethodAddHandler(vm, gammaMathMethodHandler, "gamma/math");
+  agateExForeignMethodAddHandler(vm, gammaRenderMethodHandler, "gamma/render");
   agateExForeignMethodAddHandler(vm, gammaTimeMethodHandler, "gamma/time");
   agateExForeignMethodAddHandler(vm, gammaWindowMethodHandler, "gamma/window");
 

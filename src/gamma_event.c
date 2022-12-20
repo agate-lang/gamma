@@ -7,8 +7,9 @@
 #include "gamma_common.h"
 #include "gamma_check.h"
 #include "gamma_error.h"
-#include "gamma_root.h"
+#include "gamma_math.h"
 #include "gamma_tags.h"
+#include "gamma_utils.h"
 
 /*
  * Event
@@ -369,10 +370,7 @@ static void gammaMouseButtonEventCoordinates(AgateVM *vm) {
   struct GammaEvent *event = agateSlotGetForeign(vm, 0);
   assert(event->raw.type == SDL_MOUSEBUTTONDOWN || event->raw.type == SDL_MOUSEBUTTONUP);
 
-  ptrdiff_t class_slot = agateSlotAllocate(vm);
-  agateGetVariable(vm, "gamma", "Vec2I", class_slot);
-  struct GammaVec2I *coords = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
-
+  struct GammaVec2I *coords = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2I");
   coords->v[0] = event->raw.button.x;
   coords->v[1] = event->raw.button.y;
 }
@@ -393,9 +391,7 @@ static void gammaMouseWheelEventOffset(AgateVM *vm) {
   struct GammaEvent *event = agateSlotGetForeign(vm, 0);
   assert(event->raw.type == SDL_MOUSEWHEEL);
 
-  ptrdiff_t class_slot = agateSlotAllocate(vm);
-  agateGetVariable(vm, "gamma", "Vec2I", class_slot);
-  struct GammaVec2I *offset = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
+  struct GammaVec2I *offset = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2I");
 
   if (event->raw.wheel.direction == SDL_MOUSEWHEEL_NORMAL) {
     offset->v[0] = event->raw.wheel.x;
@@ -427,10 +423,7 @@ static void gammaResizeEventSize(AgateVM *vm) {
   struct GammaEvent *event = agateSlotGetForeign(vm, 0);
   assert(event->raw.type == SDL_WINDOWEVENT && event->raw.window.event == SDL_WINDOWEVENT_SIZE_CHANGED);
 
-  ptrdiff_t class_slot = agateSlotAllocate(vm);
-  agateGetVariable(vm, "gamma", "Vec2I", class_slot);
-  struct GammaVec2I *size = agateSlotSetForeign(vm, AGATE_RETURN_SLOT, class_slot);
-
+  struct GammaVec2I *size = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2I");
   size->v[0] = event->raw.window.data1;
   size->v[1] = event->raw.window.data2;
 }

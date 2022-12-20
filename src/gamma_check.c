@@ -3,7 +3,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "gamma_root.h"
+#include "gamma_math.h"
 #include "gamma_tags.h"
 
 bool gammaCheckBool(AgateVM *vm, ptrdiff_t slot, bool *result) {

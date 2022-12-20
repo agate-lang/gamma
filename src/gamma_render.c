@@ -1,4 +1,4 @@
-#include "gamma_gfx.h"
+#include "gamma_render.h"
 
 #include <assert.h>
 #include <stdint.h>
@@ -11,7 +11,7 @@
 #include "gamma_common.h"
 #include "gamma_check.h"
 #include "gamma_error.h"
-#include "gamma_root.h"
+#include "gamma_math.h"
 #include "gamma_sprite.h"
 #include "gamma_tags.h"
 #include "gamma_utils.h"
@@ -329,7 +329,7 @@ static void gammaCameraGetSize(AgateVM *vm) {
   assert(gammaCheckForeign(vm, 0, GAMMA_CAMERA_TAG));
   struct GammaCamera *camera = agateSlotGetForeign(vm, 0);
 
-  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2F");
   *result = camera->expected_size;
 }
 
@@ -347,7 +347,7 @@ static void gammaCameraGetCenter(AgateVM *vm) {
   assert(gammaCheckForeign(vm, 0, GAMMA_CAMERA_TAG));
   struct GammaCamera *camera = agateSlotGetForeign(vm, 0);
 
-  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2F");
   *result = camera->center;
 }
 
@@ -470,7 +470,7 @@ static void gammaCameraGetViewport(AgateVM *vm) {
   assert(gammaCheckForeign(vm, 0, GAMMA_CAMERA_TAG));
   struct GammaCamera *camera = agateSlotGetForeign(vm, 0);
 
-  struct GammaRectF *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "RectF");
+  struct GammaRectF *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "RectF");
   *result = camera->expected_viewport;
 }
 
@@ -610,7 +610,7 @@ static void gammaTransformGetOrigin(AgateVM *vm) {
   assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
   struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
 
-  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2F");
   *result = transform->origin;
 }
 
@@ -630,7 +630,7 @@ static void gammaTransformGetPosition(AgateVM *vm) {
   assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
   struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
 
-  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2F");
   *result = transform->position;
 }
 
@@ -697,7 +697,7 @@ static void gammaTransformGetScale(AgateVM *vm) {
   assert(gammaCheckForeign(vm, 0, GAMMA_TRANSFORM_TAG));
   struct GammaTransform *transform = agateSlotGetForeign(vm, 0);
 
-  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2F");
   *result = transform->scale;
 }
 
@@ -1109,7 +1109,7 @@ static void gammaRendererWorldToDevice1(AgateVM *vm) {
     return;
   }
 
-  struct GammaVec2I *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2I");
+  struct GammaVec2I *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2I");
   *result = gammaRendererRawWorldToDevice(renderer, &renderer->camera, position);
 }
 
@@ -1131,7 +1131,7 @@ static void gammaRendererWorldToDevice2(AgateVM *vm) {
 
   const struct GammaCamera *camera = agateSlotGetForeign(vm, 2);
 
-  struct GammaVec2I *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2I");
+  struct GammaVec2I *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2I");
   *result = gammaRendererRawWorldToDevice(renderer, camera, position);
 }
 
@@ -1146,7 +1146,7 @@ static void gammaRendererDeviceToWorld1(AgateVM *vm) {
     return;
   }
 
-  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2F");
   *result = gammaRendererRawDeviceToWorld(renderer, &renderer->camera, coordinates);
 }
 
@@ -1168,7 +1168,7 @@ static void gammaRendererDeviceToWorld2(AgateVM *vm) {
 
   const struct GammaCamera *camera = agateSlotGetForeign(vm, 2);
 
-  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Vec2F");
+  struct GammaVec2F *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Vec2F");
   *result = gammaRendererRawDeviceToWorld(renderer, camera, coordinates);
 }
 
@@ -1282,8 +1282,8 @@ static void gammaRendererSetVsynced(AgateVM *vm) {
  * unit configuration
  */
 
-AgateForeignClassHandler gammaGfxClassHandler(AgateVM *vm, const char *unit_name, const char *class_name) {
-  assert(gammaEquals(unit_name, "gamma/gfx"));
+AgateForeignClassHandler gammaRenderClassHandler(AgateVM *vm, const char *unit_name, const char *class_name) {
+  assert(gammaEquals(unit_name, "gamma/render"));
   AgateForeignClassHandler handler = { NULL, NULL, NULL };
 
   if (gammaEquals(class_name, "Camera")) {
@@ -1308,8 +1308,8 @@ AgateForeignClassHandler gammaGfxClassHandler(AgateVM *vm, const char *unit_name
   return handler;
 }
 
-AgateForeignMethodFunc gammaGfxMethodHandler(AgateVM *vm, const char *unit_name, const char *class_name, AgateForeignMethodKind kind, const char *signature) {
-  assert(gammaEquals(unit_name, "gamma/gfx"));
+AgateForeignMethodFunc gammaRenderMethodHandler(AgateVM *vm, const char *unit_name, const char *class_name, AgateForeignMethodKind kind, const char *signature) {
+  assert(gammaEquals(unit_name, "gamma/render"));
 
   if (gammaEquals(class_name, "Camera")) {
     if (kind == AGATE_FOREIGN_METHOD_INSTANCE) {

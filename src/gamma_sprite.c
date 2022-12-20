@@ -6,7 +6,7 @@
 #include "gamma_check.h"
 #include "gamma_common.h"
 #include "gamma_error.h"
-#include "gamma_root.h"
+#include "gamma_math.h"
 #include "gamma_tags.h"
 #include "gamma_utils.h"
 
@@ -129,7 +129,7 @@ static void gammaImageSubscriptGetter(AgateVM *vm) {
     return;
   }
 
-  struct GammaColor *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "Color");
+  struct GammaColor *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "Color");
   gammaImageRawGet(image, x, y, result);
 }
 

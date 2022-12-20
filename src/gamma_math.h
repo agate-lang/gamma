@@ -1,5 +1,5 @@
-#ifndef GAMMA_ROOT_H
-#define GAMMA_ROOT_H
+#ifndef GAMMA_MATH_H
+#define GAMMA_MATH_H
 
 #include "agate.h"
 
@@ -45,7 +45,7 @@ void gammaMat3FRawMul(struct GammaMat3F *result, struct GammaMat3F *lhs, struct 
 void gammaMat3FRawTransformPoint(struct GammaVec2F *result, struct GammaMat3F *lhs, struct GammaVec2F *rhs);
 bool gammaMat3FRawInverse(struct GammaMat3F *result, const struct GammaMat3F *mat);
 
-AgateForeignClassHandler gammaRootClassHandler(AgateVM *vm, const char *unit_name, const char *class_name);
-AgateForeignMethodFunc gammaRootMethodHandler(AgateVM *vm, const char *unit_name, const char *class_name, AgateForeignMethodKind kind, const char *signature);
+AgateForeignClassHandler gammaMathClassHandler(AgateVM *vm, const char *unit_name, const char *class_name);
+AgateForeignMethodFunc gammaMathMethodHandler(AgateVM *vm, const char *unit_name, const char *class_name, AgateForeignMethodKind kind, const char *signature);
 
-#endif // GAMMA_ROOT_H
+#endif // GAMMA_MATH_H

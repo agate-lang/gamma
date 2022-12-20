@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 Julien Bernard
 
+import "gamma/math"
+
 class Event {
   static poll() foreign
 #   static wait() foreign

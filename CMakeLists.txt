@@ -28,8 +28,8 @@ add_executable(gamma
   src/gamma_common.c
   src/gamma_error.c
   src/gamma_event.c
-  src/gamma_gfx.c
-  src/gamma_root.c
+  src/gamma_math.c
+  src/gamma_render.c
   src/gamma_sprite.c
   src/gamma_time.c
   src/gamma_utils.c

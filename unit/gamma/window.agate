@@ -2,6 +2,8 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 Julien Bernard
 
+import "gamma/math"
+
 foreign class Window {
   construct new(title, w, h) foreign
   open foreign
