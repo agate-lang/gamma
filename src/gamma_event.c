@@ -554,8 +554,6 @@ GAMMA_MOUSE_BUTTON_LIST
   X(NUMPAD_PERIOD,    NumpadPeriod,   SDL_SCANCODE_KP_PERIOD)     \
   X(APPLICATION,      Application,    SDL_SCANCODE_APPLICATION)
 
-//   X(,      ,    SDL_SCANCODE_)
-
 
 #define X(name, fname, code)                      \
 static void gammaScancode ## fname(AgateVM *vm) { \
@@ -565,6 +563,138 @@ static void gammaScancode ## fname(AgateVM *vm) { \
 GAMMA_SCANCODE_LIST
 
 #undef X
+
+/*
+ * Keycode
+ */
+
+// NAME, FNAME, CODE
+#define GAMMA_KEYCODE_LIST \
+  X(UNKNOWN,          Unknown,        SDLK_UNKNOWN)       \
+  X(RETURN,           Return,         SDLK_RETURN)        \
+  X(ESCAPE,           Escape,         SDLK_ESCAPE)        \
+  X(BACKSPACE,        Backspace,      SDLK_BACKSPACE)     \
+  X(TAB,              Tab,            SDLK_TAB)           \
+  X(SPACE,            Space,          SDLK_SPACE)         \
+  X(EXCLAIM,          Exclaim,        SDLK_EXCLAIM)       \
+  X(QUOTE_DOUBLE,     QuoteDouble,    SDLK_QUOTEDBL)      \
+  X(HASH,             Hash,           SDLK_HASH)          \
+  X(PERCENT,          Percent,        SDLK_PERCENT)       \
+  X(DOLLAR,           Dollar,         SDLK_DOLLAR)        \
+  X(AMPERSAND,        Ampersand,      SDLK_AMPERSAND)     \
+  X(QUOTE,            Quote,          SDLK_QUOTE)         \
+  X(LEFT_PAREN,       LeftParen,      SDLK_LEFTPAREN)     \
+  X(RIGHT_PAREN,      RightParen,     SDLK_RIGHTPAREN)    \
+  X(ASTERISK,         Asterisk,       SDLK_ASTERISK)      \
+  X(PLUS,             Plus,           SDLK_PLUS)          \
+  X(COMMA,            Comma,          SDLK_COMMA)         \
+  X(MINUS,            Minus,          SDLK_MINUS)         \
+  X(PERIOD,           Period,         SDLK_PERIOD)        \
+  X(SLASH,            Slash,          SDLK_SLASH)         \
+  X(NUM0,             Num0,           SDLK_0)             \
+  X(NUM1,             Num1,           SDLK_1)             \
+  X(NUM2,             Num2,           SDLK_2)             \
+  X(NUM3,             Num3,           SDLK_3)             \
+  X(NUM4,             Num4,           SDLK_4)             \
+  X(NUM5,             Num5,           SDLK_5)             \
+  X(NUM6,             Num6,           SDLK_6)             \
+  X(NUM7,             Num7,           SDLK_7)             \
+  X(NUM8,             Num8,           SDLK_8)             \
+  X(NUM9,             Num9,           SDLK_9)             \
+  X(COLON,            Colon,          SDLK_COLON)         \
+  X(SEMICOLON,        Semicolon,      SDLK_SEMICOLON)     \
+  X(LESS,             Less,           SDLK_LESS)          \
+  X(EQUALS,           Equals,         SDLK_EQUALS)        \
+  X(GREATER,          Greater,        SDLK_GREATER)       \
+  X(QUESTION,         Question,       SDLK_QUESTION)      \
+  X(AT,               At,             SDLK_AT)            \
+  X(LEFT_BRACKET,     LeftBracket,    SDLK_LEFTBRACKET)   \
+  X(BACKSLASH,        Backslash,      SDLK_BACKSLASH)     \
+  X(RIGHT_BRACKET,    RightBracket,   SDLK_RIGHTBRACKET)  \
+  X(CARET,            Caret,          SDLK_CARET)         \
+  X(UNDERSCORE,       Underscore,     SDLK_UNDERSCORE)    \
+  X(BACKQUOTE,        Backquote,      SDLK_BACKQUOTE)     \
+  X(A,                A,              SDLK_a)             \
+  X(B,                B,              SDLK_b)             \
+  X(C,                C,              SDLK_c)             \
+  X(D,                D,              SDLK_d)             \
+  X(E,                E,              SDLK_e)             \
+  X(F,                F,              SDLK_f)             \
+  X(G,                G,              SDLK_g)             \
+  X(H,                H,              SDLK_h)             \
+  X(I,                I,              SDLK_i)             \
+  X(J,                J,              SDLK_j)             \
+  X(K,                K,              SDLK_k)             \
+  X(L,                L,              SDLK_l)             \
+  X(M,                M,              SDLK_m)             \
+  X(N,                N,              SDLK_n)             \
+  X(O,                O,              SDLK_o)             \
+  X(P,                P,              SDLK_p)             \
+  X(Q,                Q,              SDLK_q)             \
+  X(R,                R,              SDLK_r)             \
+  X(S,                S,              SDLK_s)             \
+  X(T,                T,              SDLK_t)             \
+  X(U,                U,              SDLK_u)             \
+  X(V,                V,              SDLK_v)             \
+  X(W,                W,              SDLK_w)             \
+  X(X,                X,              SDLK_x)             \
+  X(Y,                Y,              SDLK_y)             \
+  X(Z,                Z,              SDLK_z)             \
+  X(CAPS_LOCK,        CapsLock,       SDLK_CAPSLOCK)      \
+  X(F1,               F1,             SDLK_F1)            \
+  X(F2,               F2,             SDLK_F2)            \
+  X(F3,               F3,             SDLK_F3)            \
+  X(F4,               F4,             SDLK_F4)            \
+  X(F5,               F5,             SDLK_F5)            \
+  X(F6,               F6,             SDLK_F6)            \
+  X(F7,               F7,             SDLK_F7)            \
+  X(F8,               F8,             SDLK_F8)            \
+  X(F9,               F9,             SDLK_F9)            \
+  X(F10,              F10,            SDLK_F10)           \
+  X(F11,              F11,            SDLK_F11)           \
+  X(F12,              F12,            SDLK_F12)           \
+  X(PRINT_SCREEN,     PrintScreen,    SDLK_PRINTSCREEN)   \
+  X(SCROLL_LOCK,      ScrollLock,     SDLK_SCROLLLOCK)    \
+  X(PAUSE,            Pause,          SDLK_PAUSE)         \
+  X(INSERT,           Insert,         SDLK_INSERT)        \
+  X(HOME,             Home,           SDLK_HOME)          \
+  X(PAGE_UP,          PageUp,         SDLK_PAGEUP)        \
+  X(DELETE,           Delete,         SDLK_DELETE)        \
+  X(END,              End,            SDLK_END)           \
+  X(PAGE_DOWN,        PageDown,       SDLK_PAGEDOWN)      \
+  X(RIGHT,            Right,          SDLK_RIGHT)         \
+  X(LEFT,             Left,           SDLK_LEFT)          \
+  X(DOWN,             Down,           SDLK_DOWN)          \
+  X(UP,               Up,             SDLK_UP)            \
+  X(NUM_LOCK,         NumLock,        SDLK_NUMLOCKCLEAR)  \
+  X(NUMPAD_DIVIDE,    NumpadDivide,   SDLK_KP_DIVIDE)     \
+  X(NUMPAD_MULTIPLY,  NumpadMultiply, SDLK_KP_MULTIPLY)   \
+  X(NUMPAD_MINUS,     NumpadMinus,    SDLK_KP_MINUS)      \
+  X(NUMPAD_PLUS,      NumpadPlus,     SDLK_KP_PLUS)       \
+  X(NUMPAD_ENTER,     NumpadEnter,    SDLK_KP_ENTER)      \
+  X(NUMPAD_1,         Numpad1,        SDLK_KP_1)          \
+  X(NUMPAD_2,         Numpad2,        SDLK_KP_2)          \
+  X(NUMPAD_3,         Numpad3,        SDLK_KP_3)          \
+  X(NUMPAD_4,         Numpad4,        SDLK_KP_4)          \
+  X(NUMPAD_5,         Numpad5,        SDLK_KP_5)          \
+  X(NUMPAD_6,         Numpad6,        SDLK_KP_6)          \
+  X(NUMPAD_7,         Numpad7,        SDLK_KP_7)          \
+  X(NUMPAD_8,         Numpad8,        SDLK_KP_8)          \
+  X(NUMPAD_9,         Numpad9,        SDLK_KP_9)          \
+  X(NUMPAD_0,         Numpad0,        SDLK_KP_0)          \
+  X(NUMPAD_PERIOD,    NumpadPeriod,   SDLK_KP_PERIOD)     \
+  X(APPLICATION,      Application,    SDLK_APPLICATION)
+
+
+#define X(name, fname, code)                      \
+static void gammaKeycode ## fname(AgateVM *vm) {  \
+  agateSlotSetInt(vm, AGATE_RETURN_SLOT, code);   \
+}
+
+GAMMA_KEYCODE_LIST
+
+#undef X
+
 
 /*
  * Keyboard
@@ -782,6 +912,14 @@ AgateForeignMethodFunc gammaEventMethodHandler(AgateVM *vm, const char *unit_nam
     if (kind == AGATE_FOREIGN_METHOD_CLASS) {
       #define X(name, fname, type) if (gammaEquals(signature, #name)) { return gammaScancode ## fname; }
       GAMMA_SCANCODE_LIST
+      #undef X
+    }
+  }
+
+  if (gammaEquals(class_name, "Keycode")) {
+    if (kind == AGATE_FOREIGN_METHOD_CLASS) {
+      #define X(name, fname, type) if (gammaEquals(signature, #name)) { return gammaKeycode ## fname; }
+      GAMMA_KEYCODE_LIST
       #undef X
     }
   }
