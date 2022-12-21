@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <float.h>
 
 #include <SDL2/SDL.h>
 
