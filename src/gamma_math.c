@@ -307,6 +307,15 @@ static void gammaVec2INotEq(AgateVM *vm) {
 
 // raw functions
 
+struct GammaVec2F gammaRectFRawPosition(const struct GammaRectF *rect, float u, float v, bool invert_y) {
+  struct GammaVec2F result = {{ rect->position.v[0] + u * rect->size.v[0], rect->position.v[1] + v * rect->size.v[1] }};
+
+  if (invert_y) {
+    result.v[1] = 1.0f - result.v[1];
+  }
+
+  return result;
+}
 
 // class
 

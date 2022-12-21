@@ -26,6 +26,7 @@ add_executable(gamma
   src/gamma.c
   src/gamma_check.c
   src/gamma_common.c
+  src/gamma_debug.c
   src/gamma_error.c
   src/gamma_event.c
   src/gamma_math.c

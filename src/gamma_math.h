@@ -22,6 +22,8 @@ struct GammaVec2F gammaRectFRawCenter(const struct GammaRectF *rect) {
   return center;
 }
 
+struct GammaVec2F gammaRectFRawPosition(const struct GammaRectF *rect, float u, float v, bool invert_y);
+
 struct GammaRectI {
   struct GammaVec2I position;
   struct GammaVec2I size;

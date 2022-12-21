@@ -6,10 +6,9 @@
 
 #include <SDL2/SDL.h>
 
-#include "glad/glad.h"
-
 #include "gamma_common.h"
 #include "gamma_check.h"
+#include "gamma_debug.h"
 #include "gamma_error.h"
 #include "gamma_math.h"
 #include "gamma_sprite.h"
@@ -342,20 +341,21 @@ struct GammaShader {
 
 static GLuint gammaShaderRawCompile(const char *source, GLenum type) {
   GLuint shader = glCreateShader(type);
+  GAMMA_GL_CHECK_HERE();
 
   if (shader == 0) {
     return 0;
   }
 
-  glShaderSource(shader, 1, &source, NULL);
-  glCompileShader(shader);
+  GAMMA_GL_CHECK(glShaderSource(shader, 1, &source, NULL));
+  GAMMA_GL_CHECK(glCompileShader(shader));
 
   GLint status = GL_FALSE;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
+  GAMMA_GL_CHECK(glGetShaderiv(shader, GL_COMPILE_STATUS, &status));
 
   if (status != GL_TRUE) {
     char info_log[GAMMA_INFO_LOG_MAX];
-    glGetShaderInfoLog(shader, GAMMA_INFO_LOG_MAX, NULL, info_log);
+    GAMMA_GL_CHECK(glGetShaderInfoLog(shader, GAMMA_INFO_LOG_MAX, NULL, info_log));
     fprintf(stderr, "%s\n", info_log);
     return 0;
   }
@@ -368,24 +368,24 @@ static GLuint gammaShaderRawCompileProgram(const char *vertex_source, const char
 
   if (vertex_source != NULL) {
     GLuint shader = gammaShaderRawCompile(vertex_source, GL_VERTEX_SHADER);
-    glAttachShader(program, shader);
-    glDeleteShader(shader); // the shader is still here because it is attached to the program
+    GAMMA_GL_CHECK(glAttachShader(program, shader));
+    GAMMA_GL_CHECK(glDeleteShader(shader)); // the shader is still here because it is attached to the program
   }
 
   if (fragment_source != NULL) {
     GLuint shader = gammaShaderRawCompile(fragment_source, GL_FRAGMENT_SHADER);
-    glAttachShader(program, shader);
-    glDeleteShader(shader); // the shader is still here because it is attached to the program
+    GAMMA_GL_CHECK(glAttachShader(program, shader));
+    GAMMA_GL_CHECK(glDeleteShader(shader)); // the shader is still here because it is attached to the program
   }
 
-  glLinkProgram(program);
+  GAMMA_GL_CHECK(glLinkProgram(program));
 
   GLint status = GL_FALSE;
-  glGetProgramiv(program, GL_LINK_STATUS, &status);
+  GAMMA_GL_CHECK(glGetProgramiv(program, GL_LINK_STATUS, &status));
 
   if (status != GL_TRUE) {
     char info_log[GAMMA_INFO_LOG_MAX];
-    glGetProgramInfoLog(program, GAMMA_INFO_LOG_MAX, NULL, info_log);
+    GAMMA_GL_CHECK(glGetProgramInfoLog(program, GAMMA_INFO_LOG_MAX, NULL, info_log));
     fprintf(stderr, "%s\n", info_log);
     return 0;
   }
@@ -796,7 +796,7 @@ struct GammaTransform {
 
 static void gammaTransformComputeMatrix(const struct GammaTransform *transform, struct GammaRectF bounds, struct GammaMat3F *mat) {
   float ox = transform->origin.v[0] * bounds.size.v[0] + bounds.position.v[0];
-  float oy = transform->origin.v[1] * bounds.size.v[1] + bounds.position.v[0];
+  float oy = transform->origin.v[1] * bounds.size.v[1] + bounds.position.v[1];
   float px = transform->position.v[0];
   float py = transform->position.v[1];
   float cos_v = cosf(transform->rotation);
@@ -1029,24 +1029,6 @@ static void gammaTransformScale(AgateVM *vm) {
  * Renderer
  */
 
-struct GammaVertex {
-  struct GammaVec2F position;
-  struct GammaColor color;
-  struct GammaVec2F texcoords;
-};
-
-struct GammaRendererData {
-  GLenum mode;
-  GLsizei count;
-  GLuint vertex_buffer;
-  GLuint element_buffer;
-  enum GammaTextureFormat format;
-  GLuint texture0;
-  GLuint texture1;
-  GLuint shader;
-  struct GammaMat3F transform;
-};
-
 struct GammaRenderer {
   SDL_GLContext context;
   GLuint vao;
@@ -1082,25 +1064,24 @@ static void gammaRendererRawCreate(struct GammaRenderer *renderer, struct GammaW
     return;
   }
 
-  glEnable(GL_BLEND);
-  glEnable(GL_SCISSOR_TEST);
-  glEnable(GL_COLOR_BUFFER_BIT);
+  GAMMA_GL_CHECK(glEnable(GL_BLEND));
+  GAMMA_GL_CHECK(glEnable(GL_SCISSOR_TEST));
 
-  glGenVertexArrays(1, &renderer->vao);
-  glBindVertexArray(renderer->vao);
+  GAMMA_GL_CHECK(glGenVertexArrays(1, &renderer->vao));
+  GAMMA_GL_CHECK(glBindVertexArray(renderer->vao));
 
   renderer->default_shader = gammaShaderRawCompileProgram(gammaDefaultVert, gammaDefaultFrag);
   renderer->default_alpha_shader = gammaShaderRawCompileProgram(gammaDefaultVert, gammaDefaultAlphaFrag);
 
   const uint8_t pixel[] = { 0xFF, 0xFF, 0xFF, 0xFF };
 
-  GLuint texture = gammaTextureRawCreate(1, 1, GL_RGBA, 4, pixel);
+  GLuint texture = gammaTextureRawCreate(1, 1, GAMMA_TEXTURE_COLOR, pixel);
   assert(texture != 0);
 
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glBindTexture(GL_TEXTURE_2D, 0);
+  GAMMA_GL_CHECK(glBindTexture(GL_TEXTURE_2D, texture));
+  GAMMA_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT));
+  GAMMA_GL_CHECK(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT));
+  GAMMA_GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
 
   renderer->default_texture = texture;
 
@@ -1115,27 +1096,27 @@ static void gammaRendererRawDestroy(struct GammaRenderer *renderer) {
     return;
   }
 
-  glBindTexture(GL_TEXTURE_2D, 0);
+  GAMMA_GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
 
   if (renderer->default_texture != 0) {
-    glDeleteTextures(1, &renderer->default_texture);
+    GAMMA_GL_CHECK(glDeleteTextures(1, &renderer->default_texture));
     renderer->default_texture = 0;
   }
 
-  glUseProgram(0);
+  GAMMA_GL_CHECK(glUseProgram(0));
 
   if (renderer->default_alpha_shader != 0) {
-    glDeleteProgram(renderer->default_alpha_shader);
+    GAMMA_GL_CHECK(glDeleteProgram(renderer->default_alpha_shader));
     renderer->default_alpha_shader = 0;
   }
 
   if (renderer->default_shader != 0) {
-    glDeleteProgram(renderer->default_shader);
+    GAMMA_GL_CHECK(glDeleteProgram(renderer->default_shader));
     renderer->default_shader = 0;
   }
 
-  glBindVertexArray(0);
-  glDeleteVertexArrays(1, &renderer->vao);
+  GAMMA_GL_CHECK(glBindVertexArray(0));
+  GAMMA_GL_CHECK(glDeleteVertexArrays(1, &renderer->vao));
   renderer->vao = 0;
 
   SDL_GL_DeleteContext(renderer->context);
@@ -1162,30 +1143,32 @@ static void gammaRendererRawDraw(const struct GammaRenderer *renderer, const str
   // shader
 
   if (data.shader == 0) {
-    if (data.format == GAMMA_TEXTURE_ALPHA) {
+    if (data.mode == GAMMA_RENDERER_ALPHA) {
       data.shader = renderer->default_alpha_shader;
     } else {
       data.shader = renderer->default_shader;
     }
   }
 
-  glUseProgram(data.shader);
+  GAMMA_GL_CHECK(glUseProgram(data.shader));
   GLint index = 0;
 
   GLint texture0_location = glGetUniformLocation(data.shader, "texture0");
+  GAMMA_GL_CHECK_HERE();
 
   if (texture0_location != -1) {
-    glActiveTexture(GL_TEXTURE0 + index);
-    glUniform1i(texture0_location, index++);
-    glBindTexture(GL_TEXTURE_2D, data.texture0);
+    GAMMA_GL_CHECK(glActiveTexture(GL_TEXTURE0 + index));
+    GAMMA_GL_CHECK(glBindTexture(GL_TEXTURE_2D, data.texture0));
+    GAMMA_GL_CHECK(glUniform1i(texture0_location, index++));
   }
 
   GLint texture1_location = glGetUniformLocation(data.shader, "texture1");
+  GAMMA_GL_CHECK_HERE();
 
   if (texture1_location != -1) {
-    glActiveTexture(GL_TEXTURE0 + index);
-    glUniform1i(texture1_location, index++);
-    glBindTexture(GL_TEXTURE_2D, data.texture1);
+    GAMMA_GL_CHECK(glActiveTexture(GL_TEXTURE0 + index));
+    GAMMA_GL_CHECK(glBindTexture(GL_TEXTURE_2D, data.texture1));
+    GAMMA_GL_CHECK(glUniform1i(texture1_location, index++));
   }
 
   // transform
@@ -1197,53 +1180,54 @@ static void gammaRendererRawDraw(const struct GammaRenderer *renderer, const str
   gammaMat3FRawMul(&transform, &view, &data.transform);
 
   GLint transform_location = glGetUniformLocation(data.shader, "transform");
+  GAMMA_GL_CHECK_HERE();
 
   if (transform_location != -1) {
-    glUniformMatrix3fv(transform_location, 1, GL_FALSE, &transform.m[0][0]);
+    GAMMA_GL_CHECK(glUniformMatrix3fv(transform_location, 1, GL_FALSE, &transform.m[0][0]));
   }
 
   // blend
 
-  glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD);
-  glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+  GAMMA_GL_CHECK(glBlendEquationSeparate(GL_FUNC_ADD, GL_FUNC_ADD));
+  GAMMA_GL_CHECK(glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
 
   // buffers
 
-  glBindBuffer(GL_ARRAY_BUFFER, data.vertex_buffer);
+  GAMMA_GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, data.vertex_buffer));
 
   if (data.element_buffer != 0) {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.element_buffer);
+    GAMMA_GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, data.element_buffer));
   }
 
   // inputs
 
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(struct GammaVertex), (void *) offsetof(struct GammaVertex, position));
+  GAMMA_GL_CHECK(glEnableVertexAttribArray(0));
+  GAMMA_GL_CHECK(glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(struct GammaVertex), (void *) offsetof(struct GammaVertex, position)));
 
-  glEnableVertexAttribArray(1);
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(struct GammaVertex), (void *) offsetof(struct GammaVertex, color));
+  GAMMA_GL_CHECK(glEnableVertexAttribArray(1));
+  GAMMA_GL_CHECK(glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(struct GammaVertex), (void *) offsetof(struct GammaVertex, color)));
 
-  glEnableVertexAttribArray(2);
-  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct GammaVertex), (void *) offsetof(struct GammaVertex, texcoords));
+  GAMMA_GL_CHECK(glEnableVertexAttribArray(2));
+  GAMMA_GL_CHECK(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(struct GammaVertex), (void *) offsetof(struct GammaVertex, texcoords)));
 
   // draw
 
   if (data.element_buffer == 0) {
-    glDrawArrays(data.mode, 0, data.count);
+    GAMMA_GL_CHECK(glDrawArrays(data.primitive, 0, data.count));
   } else {
-    glDrawElements(data.mode, data.count, GL_UNSIGNED_SHORT, NULL);
+    GAMMA_GL_CHECK(glDrawElements(data.primitive, data.count, GL_UNSIGNED_SHORT, NULL));
   }
 
   // cleanup
 
-  glDisableVertexAttribArray(2);
-  glDisableVertexAttribArray(1);
-  glDisableVertexAttribArray(0);
+  GAMMA_GL_CHECK(glDisableVertexAttribArray(2));
+  GAMMA_GL_CHECK(glDisableVertexAttribArray(1));
+  GAMMA_GL_CHECK(glDisableVertexAttribArray(0));
 
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  GAMMA_GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
   if (data.element_buffer != 0) {
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    GAMMA_GL_CHECK(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
   }
 }
 
@@ -1348,8 +1332,8 @@ static void gammaRendererClear0(AgateVM *vm) {
   assert(gammaCheckForeign(vm, 0, GAMMA_RENDERER_TAG));
   struct GammaRenderer *renderer = agateSlotGetForeign(vm, 0);
 
-  glScissor(0, 0, renderer->framebuffer_size.v[0], renderer->framebuffer_size.v[1]);
-  glClear(GL_COLOR_BUFFER_BIT);
+  GAMMA_GL_CHECK(glScissor(0, 0, renderer->framebuffer_size.v[0], renderer->framebuffer_size.v[1]));
+  GAMMA_GL_CHECK(glClear(GL_COLOR_BUFFER_BIT));
 }
 
 static void gammaRendererClear1(AgateVM *vm) {
@@ -1360,8 +1344,8 @@ static void gammaRendererClear1(AgateVM *vm) {
     return;
   }
 
-  glClearColor(color.r, color.g, color.b, color.a);
-  glClear(GL_COLOR_BUFFER_BIT);
+  GAMMA_GL_CHECK(glClearColor(color.r, color.g, color.b, color.a));
+  GAMMA_GL_CHECK(glClear(GL_COLOR_BUFFER_BIT));
 }
 
 static void gammaRendererDisplay(AgateVM *vm) {
@@ -1389,10 +1373,10 @@ static void gammaRendererSetCamera(AgateVM *vm) {
   viewport.position.v[1] = renderer->framebuffer_size.v[1] - (viewport.position.v[1] + viewport.size.v[1]); // invert y
 
   // set the viewport everytime a new camera is defined
-  glViewport(viewport.position.v[0], viewport.position.v[1], viewport.size.v[0], viewport.size.v[1]);
+  GAMMA_GL_CHECK(glViewport(viewport.position.v[0], viewport.position.v[1], viewport.size.v[0], viewport.size.v[1]));
 
   // the viewport does not scissor
-  glScissor(viewport.position.v[0], viewport.position.v[1], viewport.size.v[0], viewport.size.v[1]);
+  GAMMA_GL_CHECK(glScissor(viewport.position.v[0], viewport.position.v[1], viewport.size.v[0], viewport.size.v[1]));
 }
 
 static void gammaRendererWorldToDevice1(AgateVM *vm) {
@@ -1488,14 +1472,17 @@ static void gammaRendererDrawObject(AgateVM *vm) {
   struct GammaRendererData data;
 
   switch (agateSlotGetForeignTag(vm, 1)) {
-
-
+    case GAMMA_SPRITE_TAG:
+      gammaSpriteRawRender(vm, 1, &data);
+      gammaTransformComputeMatrix(transform, data.bounds, &data.transform);
+      break;
 
     default:
       gammaError(vm, "Graphical object parameter expected for `object`.");
       break;
   }
 
+  gammaRendererRawDraw(renderer, &data);
 }
 
 static void gammaRendererDrawRect2(AgateVM *vm) {
@@ -1525,25 +1512,26 @@ static void gammaRendererDrawRect2(AgateVM *vm) {
 
   struct GammaRendererData data;
 
-  data.mode = GL_TRIANGLE_STRIP;
+  data.primitive = GL_TRIANGLE_STRIP;
   data.count = 4;
 
-  glGenBuffers(1, &data.vertex_buffer);
-  glBindBuffer(GL_ARRAY_BUFFER, data.vertex_buffer);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  GAMMA_GL_CHECK(glGenBuffers(1, &data.vertex_buffer));
+  GAMMA_GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, data.vertex_buffer));
+  GAMMA_GL_CHECK(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
+  GAMMA_GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
 
   data.element_buffer = 0;
-  data.format = GAMMA_TEXTURE_COLOR;
+  data.mode = GAMMA_RENDERER_COLOR;
   data.texture0 = 0;
   data.texture1 = 0;
   data.shader = 0;
+  data.bounds = rect;
 
   gammaMat3FRawTranslation(&data.transform, rect.position);
 
   gammaRendererRawDraw(renderer, &data);
 
-  glDeleteBuffers(1, &data.vertex_buffer);
+  GAMMA_GL_CHECK(glDeleteBuffers(1, &data.vertex_buffer));
 }
 
 

@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2022 Julien Bernard
 
+import "gamma/math"
 import "gamma/render"
 
 foreign class Image {
@@ -15,6 +16,30 @@ foreign class Image {
 }
 
 foreign class Texture {
-#   construct from_file(filename) foreign
+  construct from_file(filename) foreign
+  construct from_image(image) foreign
 
+  size foreign
+  size=(value) foreign
+
+  smooth foreign
+  smooth=(value) foreign
+
+  repeated foreign
+  repeated=(value) foreign
+
+  generate_mipmap() foreign
+}
+
+foreign class Sprite {
+  construct new(texture) foreign
+
+#   texture foreign
+#   texture=(value) foreign
+#
+#   texture_region foreign
+#   texture_region=(value) foreign
+#
+#   color foreign
+#   color=(value= foreign
 }

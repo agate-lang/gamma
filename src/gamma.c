@@ -13,6 +13,7 @@
 #include "gamma_event.h"
 #include "gamma_math.h"
 #include "gamma_render.h"
+#include "gamma_sprite.h"
 #include "gamma_time.h"
 #include "gamma_window.h"
 
@@ -84,12 +85,14 @@ int main(int argc, char *argv[]) {
   agateExForeignClassAddHandler(vm, gammaEventClassHandler, "gamma/event");
   agateExForeignClassAddHandler(vm, gammaMathClassHandler, "gamma/math");
   agateExForeignClassAddHandler(vm, gammaRenderClassHandler, "gamma/render");
+  agateExForeignClassAddHandler(vm, gammaSpriteClassHandler, "gamma/sprite");
   agateExForeignClassAddHandler(vm, gammaWindowClassHandler, "gamma/window");
 
 
   agateExForeignMethodAddHandler(vm, gammaEventMethodHandler, "gamma/event");
   agateExForeignMethodAddHandler(vm, gammaMathMethodHandler, "gamma/math");
   agateExForeignMethodAddHandler(vm, gammaRenderMethodHandler, "gamma/render");
+  agateExForeignMethodAddHandler(vm, gammaSpriteMethodHandler, "gamma/sprite");
   agateExForeignMethodAddHandler(vm, gammaTimeMethodHandler, "gamma/time");
   agateExForeignMethodAddHandler(vm, gammaWindowMethodHandler, "gamma/window");
 

@@ -5,25 +5,17 @@
 
 #include "glad/glad.h"
 
-enum GammaTextureFormat {
-  GAMMA_TEXTURE_ALPHA,
+#include "gamma_render.h"
+#include "gamma_math.h"
+
+enum GammaTextureKind {
   GAMMA_TEXTURE_COLOR,
+  GAMMA_TEXTURE_ALPHA,
 };
 
-#define GAMMA_TEXTURE_SMOOTH    0x01
-#define GAMMA_TEXTURE_REPEATED  0x02
-#define GAMMA_TEXTURE_MIPMAP    0x04
+GLuint gammaTextureRawCreate(GLsizei width, GLsizei height, enum GammaTextureKind kind, const uint8_t *data);
 
-struct GammaTexture {
-  enum GammaTextureFormat format;
-  GLuint texture;
-  GLsizei width;
-  GLsizei height;
-  uint32_t flags;
-};
-
-GLuint gammaTextureRawCreate(GLsizei width, GLsizei height, GLenum format, GLint alignment, const uint8_t *data);
-
+void gammaSpriteRawRender(AgateVM *vm, ptrdiff_t slot, struct GammaRendererData *data);
 
 AgateForeignClassHandler gammaSpriteClassHandler(AgateVM *vm, const char *unit_name, const char *class_name);
 AgateForeignMethodFunc gammaSpriteMethodHandler(AgateVM *vm, const char *unit_name, const char *class_name, AgateForeignMethodKind kind, const char *signature);
