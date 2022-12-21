@@ -34,12 +34,12 @@ foreign class Texture {
 foreign class Sprite {
   construct new(texture) foreign
 
-#   texture foreign
-#   texture=(value) foreign
-#
-#   texture_region foreign
-#   texture_region=(value) foreign
-#
-#   color foreign
-#   color=(value= foreign
+  texture foreign
+  texture=(value) foreign
+
+  texture_region foreign
+  texture_region=(value) foreign
+
+  color foreign
+  color=(value) foreign
 }

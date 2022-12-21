@@ -528,6 +528,72 @@ static void gammaSpriteNew(AgateVM *vm) {
   gammaSpriteUpdateBuffer(sprite);
 }
 
+static void gammaSpriteGetTexture(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_SPRITE_TAG));
+  struct GammaSprite *sprite = agateSlotGetForeign(vm, 0);
+  agateSlotSetHandle(vm, AGATE_RETURN_SLOT, sprite->texture.handle);
+}
+
+static void gammaSpriteSetTexture(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_SPRITE_TAG));
+  struct GammaSprite *sprite = agateSlotGetForeign(vm, 0);
+
+  if (!gammaCheckForeign(vm, 1, GAMMA_TEXTURE_TAG)) {
+    gammaError(vm, "Texture parameter expected for `value`.");
+    return;
+  }
+
+  struct GammaTexture *texture = agateSlotGetForeign(vm, 1);
+
+  agateReleaseHandle(vm, sprite->texture.handle);
+
+  sprite->texture.id = texture->id;
+  sprite->texture.size.v[0] = texture->width;
+  sprite->texture.size.v[1] = texture->height;
+  sprite->texture.handle = agateSlotGetHandle(vm, 1);
+
+  gammaSpriteUpdateBuffer(sprite);
+}
+
+static void gammaSpriteGetTextureRegion(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_SPRITE_TAG));
+  struct GammaSprite *sprite = agateSlotGetForeign(vm, 0);
+
+  struct GammaRectF *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/math", "RectF");
+  *result = sprite->texture.region;
+}
+
+static void gammaSpriteSetTextureRegion(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_SPRITE_TAG));
+  struct GammaSprite *sprite = agateSlotGetForeign(vm, 0);
+
+  if (!gammaCheckRectF(vm, 1, &sprite->texture.region)) {
+    gammaError(vm, "RectF parameter expected for `value`.");
+    return;
+  }
+
+  gammaSpriteUpdateBuffer(sprite);
+}
+
+static void gammaSpriteGetColor(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_SPRITE_TAG));
+  struct GammaSprite *sprite = agateSlotGetForeign(vm, 0);
+
+  struct GammaColor *result = gammaForeignAllocate(vm, AGATE_RETURN_SLOT, "gamma/render", "Color");
+  *result = sprite->color;
+}
+
+static void gammaSpriteSetColor(AgateVM *vm) {
+  assert(gammaCheckForeign(vm, 0, GAMMA_SPRITE_TAG));
+  struct GammaSprite *sprite = agateSlotGetForeign(vm, 0);
+
+  if (!gammaCheckColor(vm, 1, &sprite->color)) {
+    gammaError(vm, "Color parameter expected for `value`.");
+    return;
+  }
+
+  gammaSpriteUpdateBuffer(sprite);
+}
 
 /*
  * unit configuration
@@ -589,6 +655,12 @@ AgateForeignMethodFunc gammaSpriteMethodHandler(AgateVM *vm, const char *unit_na
   if (gammaEquals(class_name, "Sprite")) {
     if (kind == AGATE_FOREIGN_METHOD_INSTANCE) {
       if (gammaEquals(signature, "init new(_)")) { return gammaSpriteNew; }
+      if (gammaEquals(signature, "texture")) { return gammaSpriteGetTexture; }
+      if (gammaEquals(signature, "texture=(_)")) { return gammaSpriteSetTexture; }
+      if (gammaEquals(signature, "texture_region")) { return gammaSpriteGetTextureRegion; }
+      if (gammaEquals(signature, "texture_region=(_)")) { return gammaSpriteSetTextureRegion; }
+      if (gammaEquals(signature, "color")) { return gammaSpriteGetColor; }
+      if (gammaEquals(signature, "color=(_)")) { return gammaSpriteSetColor; }
     }
   }
 
