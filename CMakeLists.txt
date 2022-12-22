@@ -20,21 +20,21 @@ else()
 endif()
 
 set(GAMMA_UNIT_DIRECTORY "${CMAKE_INSTALL_FULL_DATAROOTDIR}/gamma/unit")
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/oldsrc/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
 add_executable(gamma
-  src/gamma.c
-  src/gamma_check.c
-  src/gamma_common.c
-  src/gamma_debug.c
-  src/gamma_error.c
-  src/gamma_event.c
-  src/gamma_math.c
-  src/gamma_render.c
-  src/gamma_sprite.c
-  src/gamma_time.c
-  src/gamma_utils.c
-  src/gamma_window.c
+  oldsrc/gamma.c
+  oldsrc/gamma_check.c
+  oldsrc/gamma_common.c
+  oldsrc/gamma_debug.c
+  oldsrc/gamma_error.c
+  oldsrc/gamma_event.c
+  oldsrc/gamma_math.c
+  oldsrc/gamma_render.c
+  oldsrc/gamma_sprite.c
+  oldsrc/gamma_time.c
+  oldsrc/gamma_utils.c
+  oldsrc/gamma_window.c
 
   vendor/agate/agate.c
   vendor/agate/agate-support.c
