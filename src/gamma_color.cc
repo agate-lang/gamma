@@ -23,12 +23,14 @@ namespace gma {
       float a;
     };
 
-    static void convert_rgb_to_hsv(HSV & hsv, const Color & color) {
+    static HSV convert_rgb_to_hsv(const Color & color) {
       const float r = color.r;
       const float g = color.g;
       const float b = color.b;
 
       const auto [ min, max ] = std::minmax({ r, g, b });
+
+      HSV hsv;
 
       if ((max - min) > std::numeric_limits<float>::epsilon()) {
         if (max == r) {
@@ -47,9 +49,10 @@ namespace gma {
       hsv.s = (max < std::numeric_limits<float>::epsilon() ? 0.0f : (1.0f - min / max));
       hsv.v = max;
       hsv.a = color.a;
+      return hsv;
     }
 
-    static void convert_hsv_to_rgb(Color & color, const HSV & hsv) {
+    static Color convert_hsv_to_rgb(const HSV & hsv) {
       const float h = hsv.h / 60.0f;
       const float s = hsv.s;
       const float v = hsv.v;
@@ -62,6 +65,8 @@ namespace gma {
       const float y = v * (1.0f - (f * s));
       const float z = v * (1.0f - (1.0f - f) * s);
 
+      Color color = { 0.0f, 0.0f, 0.0f, 0.0f };
+
       switch (i) {
         case 0: color.r = v; color.g = z; color.b = x; break;
         case 1: color.r = y; color.g = v; color.b = x; break;
@@ -73,24 +78,19 @@ namespace gma {
       }
 
       color.a = hsv.a;
+      return color;
     }
 
   }
 
   Color Color::darker(float ratio) const {
-    HSV hsv;
-    convert_rgb_to_hsv(hsv, *this);
-
+    HSV hsv = convert_rgb_to_hsv(*this);
     hsv.v -= hsv.v * ratio;
-
-    Color result;
-    convert_hsv_to_rgb(result, hsv);
-    return result;
+    return convert_hsv_to_rgb(hsv);
   }
 
   Color Color::lighter(float ratio) const {
-    HSV hsv;
-    convert_rgb_to_hsv(hsv, *this);
+    HSV hsv = convert_rgb_to_hsv(*this);
 
     hsv.v += hsv.v * ratio;
 
@@ -104,9 +104,7 @@ namespace gma {
       hsv.v = 1;
     }
 
-    Color result;
-    convert_hsv_to_rgb(result, hsv);
-    return result;
+    return convert_hsv_to_rgb(hsv);
   }
 
   Color Color::rgba32(int64_t rgba) {
