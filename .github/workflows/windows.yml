@@ -36,7 +36,7 @@ jobs:
           echo $Env:VCPKG_DEFAULT_BINARY_CACHE
           mkdir $Env:VCPKG_DEFAULT_BINARY_CACHE
           .\bootstrap-vcpkg.bat
-          .\vcpkg.exe install sdl2:x64-windows
+          .\vcpkg.exe install sdl2:x64-windows stb:x64-windows
 
       - uses: actions/checkout@v3
         with:
@@ -47,7 +47,7 @@ jobs:
       - name: Configure
         shell: cmd
         run: |
-          cmake -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{ github.workspace }}/gamma -B ${{ github.workspace }}/gamma/build
+          cmake -DGAMMA_USE_EMBEDDED_LIBS=OFF -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -DCMAKE_TOOLCHAIN_FILE=${{github.workspace}}/vcpkg/scripts/buildsystems/vcpkg.cmake -S ${{ github.workspace }}/gamma -B ${{ github.workspace }}/gamma/build
 
       - name: Build
         shell: cmd
