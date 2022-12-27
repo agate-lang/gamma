@@ -28,7 +28,7 @@ namespace gma {
       assert(agateCheckTag<Class>(vm, 0));
       auto vec = agateSlotGet<Class>(vm, 0);
 
-      if (agateCheck(vm, 1, vec->x)) {
+      if (!agateCheck(vm, 1, vec->x)) {
         agateError(vm, "%s parameter expected for `x`.", type_name<member_type>);
         return;
       }

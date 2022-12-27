@@ -18,6 +18,8 @@
 #include "gamma_time.h"
 #include "gamma_window.h"
 
+#include "gamecontrollerdb.txt.h"
+
 #include "config.h"
 
 static void usage(void) {
@@ -61,8 +63,14 @@ int main(int argc, char *argv[]) {
   // initialize SDL
 
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-    SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+    std::fprintf(stderr, "Unable to initialize SDL: %s", SDL_GetError());
     return EXIT_FAILURE;
+  }
+
+  int added = SDL_GameControllerAddMappingsFromRW(SDL_RWFromConstMem(gamma_gamecontrollerdb, sizeof gamma_gamecontrollerdb), 1);
+
+  if (added == -1) {
+    std::fprintf(stderr, "Unable to load game controller mappings: %s", SDL_GetError());
   }
 
   // initialize Agate
@@ -102,7 +110,7 @@ int main(int argc, char *argv[]) {
   if (source != nullptr) {
     agateCallString(vm, argv[1], source);
   } else {
-    fprintf(stderr, "Could not find gamma unit '%s'.\n", argv[1]);
+    std::fprintf(stderr, "Could not find gamma unit '%s'.\n", argv[1]);
   }
 
   // shutdown Agate

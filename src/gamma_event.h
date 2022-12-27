@@ -36,6 +36,22 @@ namespace gma {
     static constexpr const char * class_name = "MouseWheelEvent";
   };
 
+  struct GamepadButtonEventClass : EventClass {
+    static constexpr const char * class_name = "GamepadButtonEvent";
+  };
+
+  struct GamepadAxisEventClass : EventClass {
+    static constexpr const char * class_name = "GamepadAxisEvent";
+  };
+
+  struct GamepadConnectionEventClass : EventClass {
+    static constexpr const char * class_name = "GamepadConnectionEvent";
+  };
+
+  struct GamepadDisconnectionEventClass : EventClass {
+    static constexpr const char * class_name = "GamepadDisconnectionEvent";
+  };
+
   struct WindowEventClass : EventClass {
     static constexpr const char * class_name = "WindowEvent";
   };
@@ -62,15 +78,21 @@ namespace gma {
     static constexpr uint64_t tag = compute_tag(unit_name, class_name);
   };
 
-  struct KeyboardClass : EventUnit {
-    // no type
-    static constexpr const char * class_name = "Keyboard";
-    static constexpr uint64_t tag = compute_tag(unit_name, class_name);
-  };
-
   struct ModifierClass : EventUnit {
     // no type
     static constexpr const char * class_name = "Modifier";
+    static constexpr uint64_t tag = compute_tag(unit_name, class_name);
+  };
+
+  struct GamepadButtonClass : EventUnit {
+    // no type
+    static constexpr const char * class_name = "GamepadButton";
+    static constexpr uint64_t tag = compute_tag(unit_name, class_name);
+  };
+
+  struct GamepadAxisClass : EventUnit {
+    // no type
+    static constexpr const char * class_name = "GamepadAxis";
     static constexpr uint64_t tag = compute_tag(unit_name, class_name);
   };
 

@@ -26,6 +26,7 @@ foreign class Vec2F {
   static (x, y) { Vec2F.new(x, y) }
 
   to_s { "(%(.x), %(.y))" }
+  clone() { Vec2F.new(.x, .y) }
 }
 
 foreign class Vec2I {
@@ -51,6 +52,7 @@ foreign class Vec2I {
   static (x, y) { Vec2I.new(x, y) }
 
   to_s { "(%(.x), %(.y))" }
+  clone() { Vec2I.new(.x, .y) }
 }
 
 foreign class RectF {

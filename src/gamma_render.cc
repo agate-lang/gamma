@@ -275,6 +275,8 @@ namespace gma {
         agateError(vm, "Float parameter expected for `value`.");
         return;
       }
+
+      agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
     }
 
     static void rotate(AgateVM *vm) {
@@ -343,6 +345,8 @@ namespace gma {
         agateError(vm, "RectF parameter expected for `value`.");
         return;
       }
+
+      agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
     }
 
   };
@@ -967,7 +971,8 @@ namespace gma {
         return;
       }
 
-      const auto camera = agateSlotGet<CameraClass>(vm, 1);
+      auto camera = agateSlotGet<CameraClass>(vm, 2);
+      camera->update(renderer->framebuffer_size);
 
       auto result = agateSlotNew<Vec2IClass>(vm, AGATE_RETURN_SLOT);
       *result = renderer->world_to_device(position, camera);
@@ -1004,7 +1009,8 @@ namespace gma {
         return;
       }
 
-      const auto camera = agateSlotGet<CameraClass>(vm, 1);
+      auto camera = agateSlotGet<CameraClass>(vm, 2);
+      camera->update(renderer->framebuffer_size);
 
       auto result = agateSlotNew<Vec2FClass>(vm, AGATE_RETURN_SLOT);
       *result = renderer->device_to_world(coordinates, camera);

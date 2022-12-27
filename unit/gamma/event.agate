@@ -75,6 +75,26 @@ foreign class MouseWheelEvent is Event {
   offset foreign
 }
 
+# foreign class GamepadButtonEvent is Event {
+#   id foreign
+#   button foreign
+#   pressed foreign
+# }
+#
+# foreign class GamepadAxisEvent is Event {
+#   id foreign
+#   axis foreign
+#   value foreign
+# }
+#
+# foreign class GamepadConnectionEvent is Event {
+#   hw_id foreign
+# }
+#
+# foreign class GamepadDisconnectionEvent is Event {
+#   id foreign
+# }
+
 class WindowEvent is Event {
   window_id foreign
 }
@@ -95,6 +115,9 @@ class Mouse {
 }
 
 class Scancode {
+  static name(scancode) foreign
+  static localize(scancode) foreign
+
   static UNKNOWN foreign
   static A foreign
   static B foreign
@@ -195,6 +218,9 @@ class Scancode {
 }
 
 class Keycode {
+  static name(keycode) foreign
+  static unlocalize(keycode) foreign
+
   static UNKNOWN foreign
   static RETURN foreign
   static ESCAPE foreign
@@ -311,13 +337,6 @@ class Keycode {
   static APPLICATION foreign
 }
 
-class Keyboard {
-  static scancode_name(scancode) foreign
-  static keycode_name(keycode) foreign
-  static localize(scancode) foreign
-  static unlocalize(keycode) foreign
-}
-
 class Modifier {
   static NONE foreign
 
@@ -340,4 +359,37 @@ class Modifier {
   static NUM foreign
   static CAPS foreign
   static MODE foreign
+}
+
+class GamepadButton {
+  static name(button) foreign
+
+  static INVALID foreign
+  static A foreign
+  static B foreign
+  static X foreign
+  static Y foreign
+  static BACK foreign
+  static GUIDE foreign
+  static START foreign
+  static LEFT_STICK foreign
+  static RIGHT_STICK foreign
+  static LEFT_SHOULDER foreign
+  static RIGHT_SHOULDER foreign
+  static DPAD_UP foreign
+  static DPAD_DOWN foreign
+  static DPAD_LEFT foreign
+  static DPAD_RIGHT foreign
+}
+
+class GamepadAxis {
+  static name(axis) foreign
+
+  static INVALID foreign
+  static LEFT_X foreign
+  static LEFT_Y foreign
+  static RIGHT_X foreign
+  static RIGHT_Y foreign
+  static TRIGGER_LEFT foreign
+  static TRIGGER_RIGHT foreign
 }

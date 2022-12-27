@@ -1,6 +1,8 @@
 #ifndef GAMMA_AGATE_H
 #define GAMMA_AGATE_H
 
+#include <cassert>
+
 #include "agate.h"
 
 namespace gma {
@@ -19,6 +21,7 @@ namespace gma {
 
   template<typename Class>
   auto agateSlotGet(AgateVM *vm, ptrdiff_t slot) -> typename Class::type * {
+    assert(agateCheckTag<Class>(vm, slot));
     return static_cast<typename Class::type *>(agateSlotGetForeign(vm, slot));
   }
 

@@ -529,6 +529,29 @@ namespace gma {
     GAMMA_SCANCODE_LIST
 
     #undef X
+
+    static void name(AgateVM *vm) {
+      int64_t scancode;
+
+      if (!agateCheck(vm, 1, scancode)) {
+        agateError(vm, "Int parameter expected for `scancode`.");
+        return;
+      }
+
+      agateSlotSetString(vm, AGATE_RETURN_SLOT, SDL_GetScancodeName(static_cast<SDL_Scancode>(scancode)));
+    }
+
+    static void localize(AgateVM *vm) {
+      int64_t scancode;
+
+      if (!agateCheck(vm, 1, scancode)) {
+        agateError(vm, "Int parameter expected for `scancode`.");
+        return;
+      }
+
+      agateSlotSetInt(vm, AGATE_RETURN_SLOT, SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(scancode)));
+    }
+
   };
 
   /*
@@ -661,25 +684,8 @@ namespace gma {
     GAMMA_KEYCODE_LIST
 
     #undef X
-  };
 
-  /*
-   * Keyboard
-   */
-
-  struct KeyboardApi : KeyboardClass {
-    static void scancode_name(AgateVM *vm) {
-      int64_t scancode;
-
-      if (!agateCheck(vm, 1, scancode)) {
-        agateError(vm, "Int parameter expected for `scancode`.");
-        return;
-      }
-
-      agateSlotSetString(vm, AGATE_RETURN_SLOT, SDL_GetScancodeName(static_cast<SDL_Scancode>(scancode)));
-    }
-
-    static void keycode_name(AgateVM *vm) {
+    static void name(AgateVM *vm) {
       int64_t keycode;
 
       if (!agateCheck(vm, 1, keycode)) {
@@ -688,17 +694,6 @@ namespace gma {
       }
 
       agateSlotSetString(vm, AGATE_RETURN_SLOT, SDL_GetKeyName(static_cast<SDL_Keycode>(keycode)));
-    }
-
-    static void localize(AgateVM *vm) {
-      int64_t scancode;
-
-      if (!agateCheck(vm, 1, scancode)) {
-        agateError(vm, "Int parameter expected for `scancode`.");
-        return;
-      }
-
-      agateSlotSetInt(vm, AGATE_RETURN_SLOT, SDL_GetKeyFromScancode(static_cast<SDL_Scancode>(scancode)));
     }
 
     static void unlocalize(AgateVM *vm) {
@@ -713,6 +708,7 @@ namespace gma {
     }
 
   };
+
 
   /*
    * Modifier
@@ -748,6 +744,93 @@ namespace gma {
 
     #undef X
   };
+
+  /*
+   * GamepadButton
+   */
+
+// NAME, CODE
+#define GAMMA_GAMEPAD_BUTTON_LIST \
+  X(INVALID,        SDL_CONTROLLER_BUTTON_INVALID) \
+  X(A,              SDL_CONTROLLER_BUTTON_A) \
+  X(B,              SDL_CONTROLLER_BUTTON_B) \
+  X(X,              SDL_CONTROLLER_BUTTON_X) \
+  X(Y,              SDL_CONTROLLER_BUTTON_Y) \
+  X(BACK,           SDL_CONTROLLER_BUTTON_BACK) \
+  X(GUIDE,          SDL_CONTROLLER_BUTTON_GUIDE) \
+  X(START,          SDL_CONTROLLER_BUTTON_START) \
+  X(LEFT_STICK,     SDL_CONTROLLER_BUTTON_LEFTSTICK) \
+  X(RIGHT_STICK,    SDL_CONTROLLER_BUTTON_RIGHTSTICK) \
+  X(LEFT_SHOULDER,  SDL_CONTROLLER_BUTTON_LEFTSHOULDER) \
+  X(RIGHT_SHOULDER, SDL_CONTROLLER_BUTTON_RIGHTSHOULDER) \
+  X(DPAD_UP,        SDL_CONTROLLER_BUTTON_DPAD_UP) \
+  X(DPAD_DOWN,      SDL_CONTROLLER_BUTTON_DPAD_DOWN) \
+  X(DPAD_LEFT,      SDL_CONTROLLER_BUTTON_DPAD_LEFT) \
+  X(DPAD_RIGHT,     SDL_CONTROLLER_BUTTON_DPAD_RIGHT)
+
+  struct GamepadButtonApi : GamepadButtonClass {
+    #define X(name, code)                           \
+    static void name(AgateVM *vm) {                 \
+      agateSlotSetInt(vm, AGATE_RETURN_SLOT, code); \
+    }
+
+    GAMMA_GAMEPAD_BUTTON_LIST
+
+    #undef X
+
+    static void name(AgateVM *vm) {
+      int64_t button;
+
+      if (!agateCheck(vm, 1, button)) {
+        agateError(vm, "Int parameter expected for `button`.");
+        return;
+      }
+
+      agateSlotSetString(vm, AGATE_RETURN_SLOT, SDL_GameControllerGetStringForButton(static_cast<SDL_GameControllerButton>(button)));
+    }
+
+  };
+
+  /*
+   * GamepadAxis
+   */
+
+// NAME, CODE
+#define GAMMA_GAMEPAD_AXIS_LIST \
+  X(INVALID,        SDL_CONTROLLER_AXIS_INVALID)      \
+  X(LEFT_X,         SDL_CONTROLLER_AXIS_LEFTX)        \
+  X(LEFT_Y,         SDL_CONTROLLER_AXIS_LEFTY)        \
+  X(RIGHT_X,        SDL_CONTROLLER_AXIS_RIGHTX)       \
+  X(RIGHT_Y,        SDL_CONTROLLER_AXIS_RIGHTY)       \
+  X(TRIGGER_LEFT,   SDL_CONTROLLER_AXIS_TRIGGERLEFT)  \
+  X(TRIGGER_RIGHT,  SDL_CONTROLLER_AXIS_TRIGGERRIGHT)
+
+  struct GamepadAxisApi : GamepadAxisClass {
+    #define X(name, code)                           \
+    static void name(AgateVM *vm) {                 \
+      agateSlotSetInt(vm, AGATE_RETURN_SLOT, code); \
+    }
+
+    GAMMA_GAMEPAD_AXIS_LIST
+
+    #undef X
+
+    static void name(AgateVM *vm) {
+      int64_t axis;
+
+      if (!agateCheck(vm, 1, axis)) {
+        agateError(vm, "Int parameter expected for `axis`.");
+        return;
+      }
+
+      agateSlotSetString(vm, AGATE_RETURN_SLOT, SDL_GameControllerGetStringForAxis(static_cast<SDL_GameControllerAxis>(axis)));
+    }
+
+  };
+
+  /*
+   * EventUnit
+   */
 
   void EventUnit::provide_support(Support& support) {
     support.add_class_handler(unit_name, "__GenericEvent", generic_simple_handler<EventClass>());
@@ -798,18 +881,31 @@ namespace gma {
     GAMMA_SCANCODE_LIST
     #undef X
 
+    support.add_method(unit_name, ScancodeApi::class_name, AGATE_FOREIGN_METHOD_CLASS, "name(_)", ScancodeApi::name);
+    support.add_method(unit_name, ScancodeApi::class_name, AGATE_FOREIGN_METHOD_CLASS, "localize(_)", ScancodeApi::localize);
+
     #define X(name, code) support.add_method(unit_name, KeycodeApi::class_name, AGATE_FOREIGN_METHOD_CLASS, #name, KeycodeApi::name);
     GAMMA_KEYCODE_LIST
     #undef X
 
-    support.add_method(unit_name, KeyboardApi::class_name, AGATE_FOREIGN_METHOD_CLASS, "scancode_name(_)", KeyboardApi::scancode_name);
-    support.add_method(unit_name, KeyboardApi::class_name, AGATE_FOREIGN_METHOD_CLASS, "keycode_name(_)", KeyboardApi::keycode_name);
-    support.add_method(unit_name, KeyboardApi::class_name, AGATE_FOREIGN_METHOD_CLASS, "localize(_)", KeyboardApi::localize);
-    support.add_method(unit_name, KeyboardApi::class_name, AGATE_FOREIGN_METHOD_CLASS, "unlocalize(_)", KeyboardApi::unlocalize);
+    support.add_method(unit_name, KeycodeApi::class_name, AGATE_FOREIGN_METHOD_CLASS, "name(_)", KeycodeApi::name);
+    support.add_method(unit_name, KeycodeApi::class_name, AGATE_FOREIGN_METHOD_CLASS, "unlocalize(_)", KeycodeApi::unlocalize);
 
     #define X(name, code) support.add_method(unit_name, ModifierApi::class_name, AGATE_FOREIGN_METHOD_CLASS, #name, ModifierApi::name);
     GAMMA_MODIFIER_LIST
     #undef X
+
+    #define X(name, code) support.add_method(unit_name, GamepadButtonApi::class_name, AGATE_FOREIGN_METHOD_CLASS, #name, GamepadButtonApi::name);
+    GAMMA_GAMEPAD_BUTTON_LIST
+    #undef X
+
+    support.add_method(unit_name, GamepadButtonApi::class_name, AGATE_FOREIGN_METHOD_CLASS, "name(_)", GamepadButtonApi::name);
+
+    #define X(name, code) support.add_method(unit_name, GamepadAxisApi::class_name, AGATE_FOREIGN_METHOD_CLASS, #name, GamepadAxisApi::name);
+    GAMMA_GAMEPAD_AXIS_LIST
+    #undef X
+
+    support.add_method(unit_name, GamepadAxisApi::class_name, AGATE_FOREIGN_METHOD_CLASS, "name(_)", GamepadAxisApi::name);
   }
 
 }
