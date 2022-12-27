@@ -334,7 +334,7 @@ static void gammaMouseMotionEventMotion(AgateVM *vm) {
 }
 
 /*
- * MouseMotionEvent
+ * MouseButtonEvent
  */
 
 static void gammaMouseButtonEventWindowId(AgateVM *vm) {

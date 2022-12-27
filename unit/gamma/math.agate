@@ -110,26 +110,3 @@ foreign class RectI {
   static (x, y, w, h) { RectI.new(x, y, w, h) }
   static (w, h) { RectI.new(0.0, 0.0, w, h) }
 }
-
-foreign class Mat3F {
-  construct identity() foreign
-  construct translation(tx, ty) foreign
-  construct rotation(angle) foreign
-  construct rotation(angle, center) { .rotation(angle, center.x, center.y) }
-  construct rotation(angle, cx, cy) foreign
-  construct scale(sx, sy) foreign
-
-  [row,col] foreign
-
-  +(other) foreign
-  -(other) foreign
-  *(other) foreign
-
-  transpose() foreign
-  invert() foreign
-
-  transform_point(x, y) foreign
-  transform_point(p) { .transform_point(p.x, p.y) }
-  transform_vector(x, y) foreign
-  transform_vector(v) { .transform_vector(v.x, v.y) }
-}

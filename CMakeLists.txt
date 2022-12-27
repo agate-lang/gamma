@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.7)
 
 project(GAMMA
   VERSION 0.1.0
-  LANGUAGES C
+  LANGUAGES C CXX
 )
 
 option(GAMMA_USE_EMBEDDED_LIBS "Build the library with the submodule libraries" ON)
@@ -20,26 +20,30 @@ else()
 endif()
 
 set(GAMMA_UNIT_DIRECTORY "${CMAKE_INSTALL_FULL_DATAROOTDIR}/gamma/unit")
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/oldsrc/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/src/config.h.in" "${CMAKE_CURRENT_BINARY_DIR}/config.h" @ONLY)
 
 add_executable(gamma
-  oldsrc/gamma.c
-  oldsrc/gamma_check.c
-  oldsrc/gamma_common.c
-  oldsrc/gamma_debug.c
-  oldsrc/gamma_error.c
-  oldsrc/gamma_event.c
-  oldsrc/gamma_math.c
-  oldsrc/gamma_render.c
-  oldsrc/gamma_sprite.c
-  oldsrc/gamma_time.c
-  oldsrc/gamma_utils.c
-  oldsrc/gamma_window.c
+  src/gamma.cc
+  src/gamma_agate.cc
+  src/gamma_color.cc
+  src/gamma_debug.cc
+  src/gamma_event.cc
+  src/gamma_math.cc
+  src/gamma_render.cc
+  src/gamma_sprite.cc
+  src/gamma_support.cc
+  src/gamma_tag.cc
+  src/gamma_time.cc
+  src/gamma_window.cc
 
   vendor/agate/agate.c
-  vendor/agate/agate-support.c
-
   vendor/glad/src/glad.c
+)
+
+target_compile_features(gamma
+  PUBLIC
+    cxx_std_17
+    c_std_99
 )
 
 if(MSVC)

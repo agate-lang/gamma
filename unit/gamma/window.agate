@@ -5,7 +5,7 @@
 import "gamma/math"
 
 foreign class Window {
-  construct new(title, w, h) foreign
+  construct new(title, size) foreign
   open foreign
   close() foreign
 

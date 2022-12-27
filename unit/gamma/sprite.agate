@@ -8,10 +8,10 @@ import "gamma/render"
 foreign class Image {
   construct from_file(filename) foreign
 
-  [position] { this[position.x, position.y] }
+  [position] foreign
   [x, y] foreign
 
-  [position]=(color) { this[position.x, position.y] = color }
+  [position]=(color) foreign
   [x, y]=(color) foreign
 }
 
