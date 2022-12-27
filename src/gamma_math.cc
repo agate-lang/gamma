@@ -2,9 +2,8 @@
 
 #include <cassert>
 #include <cmath>
-#include <limits>
-
 #include <functional>
+#include <limits>
 
 #include "gamma_agate.h"
 
