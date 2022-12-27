@@ -75,13 +75,6 @@ target_link_libraries(gamma
     $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
 )
 
-if(UNIX)
-  target_link_libraries(gamma
-    PRIVATE
-      m
-  )
-endif()
-
 install(
   TARGETS gamma
   RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
