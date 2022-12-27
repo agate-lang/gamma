@@ -537,15 +537,15 @@ namespace gma {
 
   Vec2F transform_point(const Mat3F& mat, Vec2F vec) {
     Vec2F result;
-    result[0] = mat(0, 0) * vec[0] + mat(0, 1) * vec[1] + mat(0, 2);
-    result[1] = mat(1, 0) * vec[0] + mat(1, 1) * vec[1] + mat(1, 2);
+    result.x = mat(0, 0) * vec.x + mat(0, 1) * vec.y + mat(0, 2);
+    result.y = mat(1, 0) * vec.x + mat(1, 1) * vec.y + mat(1, 2);
     return result;
   }
 
   Vec2F transform_vector(const Mat3F& mat, Vec2F vec) {
     Vec2F result;
-    result[0] = mat(0, 0) * vec[0] + mat(0, 1) * vec[1];
-    result[1] = mat(1, 0) * vec[0] + mat(1, 1) * vec[1];
+    result.x = mat(0, 0) * vec.x + mat(0, 1) * vec.y;
+    result.y = mat(1, 0) * vec.x + mat(1, 1) * vec.y;
     return result;
   }
 
@@ -575,8 +575,8 @@ namespace gma {
 
   Mat3F translation(Vec2F offset) {
     Mat3F mat;
-    mat(0, 0) = 1.0; mat(0, 1) = 0.0; mat(0, 2) = offset[0];
-    mat(1, 0) = 0.0; mat(1, 1) = 1.0; mat(1, 2) = offset[1];
+    mat(0, 0) = 1.0; mat(0, 1) = 0.0; mat(0, 2) = offset.x;
+    mat(1, 0) = 0.0; mat(1, 1) = 1.0; mat(1, 2) = offset.y;
     mat(2, 0) = 0.0; mat(2, 1) = 0.0; mat(2, 2) = 1.0;
     return mat;
   }

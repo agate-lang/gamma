@@ -28,25 +28,6 @@ namespace gma {
     using member_type = T;
     T x;
     T y;
-
-    T operator[](int index) const {
-      switch (index) {
-        case 0: return x;
-        case 1: return y;
-        default: break;
-      }
-      assert(false);
-    }
-
-    T& operator[](int index) {
-      switch (index) {
-        case 0: return x;
-        case 1: return y;
-        default: break;
-      }
-      assert(false);
-    }
-
   };
 
   template<typename T>
