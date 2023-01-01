@@ -213,8 +213,8 @@ namespace gma {
       result.bounds.position = vec(convert(slot->metrics.horiBearingX), - convert(slot->metrics.horiBearingY));
       result.bounds.size = vec(convert(slot->metrics.width), convert(slot->metrics.height));
     } else {
-      result.bounds.position = vec<float>(bglyph->left, - bglyph->top);
-      result.bounds.size = vec<float>(bglyph->bitmap.width, bglyph->bitmap.rows);
+      result.bounds.position = vec(static_cast<float>(bglyph->left), - static_cast<float>(bglyph->top));
+      result.bounds.size = vec(static_cast<float>(bglyph->bitmap.width), static_cast<float>(bglyph->bitmap.rows));
     }
 
     // bitmap
@@ -671,7 +671,7 @@ namespace gma {
       GAMMA_GL_CHECK(glBufferSubData(GL_ARRAY_BUFFER, 0, vertices.size() * sizeof(Vertex), vertices.data()));
     } else {
       GAMMA_GL_CHECK(glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), vertices.data(), GL_STATIC_DRAW));
-      buffer_count = vertices.size();
+      buffer_count = static_cast<GLsizei>(vertices.size());
     }
 
     GAMMA_GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -686,7 +686,7 @@ namespace gma {
         GAMMA_GL_CHECK(glBufferSubData(GL_ARRAY_BUFFER, 0, outline_vertices.size() * sizeof(Vertex), outline_vertices.data()));
       } else {
         GAMMA_GL_CHECK(glBufferData(GL_ARRAY_BUFFER, outline_vertices.size() * sizeof(Vertex), outline_vertices.data(), GL_STATIC_DRAW));
-        outline_buffer_count = outline_vertices.size();
+        outline_buffer_count = static_cast<GLsizei>(outline_vertices.size());
       }
 
       GAMMA_GL_CHECK(glBindBuffer(GL_ARRAY_BUFFER, 0));
