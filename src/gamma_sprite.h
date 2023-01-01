@@ -91,7 +91,8 @@ namespace gma {
   /*
    * Sprite
    */
-  struct RendererData;
+  struct Renderer;
+  struct Transform;
 
   struct Sprite {
     GLuint buffer;
@@ -109,7 +110,7 @@ namespace gma {
     void set_texture(const Texture& new_texture, AgateHandle *new_handle);
 
     void update_buffer();
-    RendererData render();
+    void render(Renderer& renderer, const Transform& transform);
   };
 
   struct SpriteClass : SpriteUnit {

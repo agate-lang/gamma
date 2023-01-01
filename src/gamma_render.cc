@@ -7,6 +7,7 @@
 #include "gamma_agate.h"
 #include "gamma_debug.h"
 #include "gamma_sprite.h"
+#include "gamma_text.h"
 
 #include "shaders/default.vert.h"
 #include "shaders/default.frag.h"
@@ -1032,20 +1033,23 @@ namespace gma {
 
       const auto transform = agateSlotGet<TransformClass>(vm, 2);
 
-      RendererData data;
-
       switch (agateSlotGetForeignTag(vm, 1)) {
-        case SpriteClass::tag:
-          data = agateSlotGet<SpriteClass>(vm, 1)->render();
-          data.transform = transform->compute_matrix(data.bounds);
+        case SpriteClass::tag: {
+          auto sprite = agateSlotGet<SpriteClass>(vm, 1);
+          sprite->render(*renderer, *transform);
           break;
+        }
+
+        case TextClass::tag: {
+          auto text = agateSlotGet<TextClass>(vm, 1);
+          text->render(*renderer, *transform);
+          break;
+        }
 
         default:
           agateError(vm, "Graphical object parameter expected for `object`.");
           break;
       }
-
-      renderer->draw(data);
     }
 
     static void draw_rect2(AgateVM *vm) {
@@ -1088,7 +1092,6 @@ namespace gma {
       data.texture0 = 0;
       data.texture1 = 0;
       data.shader = 0;
-      data.bounds = rect;
       data.transform = translation(rect.position);
 
       renderer->draw(data);

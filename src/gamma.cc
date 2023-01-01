@@ -15,6 +15,7 @@
 #include "gamma_render.h"
 #include "gamma_sprite.h"
 #include "gamma_support.h"
+#include "gamma_text.h"
 #include "gamma_time.h"
 #include "gamma_window.h"
 
@@ -60,17 +61,24 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
+  // initialize FreeType
+
+  if (FT_Error err; (err = FT_Init_FreeType(&gma::Font::library)) != 0) {
+    std::fprintf(stderr, "Unable to load FreeType: %s\n", gma::Font::error_message(err));
+    return EXIT_FAILURE;
+  }
+
   // initialize SDL
 
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-    std::fprintf(stderr, "Unable to initialize SDL: %s", SDL_GetError());
+    std::fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
     return EXIT_FAILURE;
   }
 
   int added = SDL_GameControllerAddMappingsFromRW(SDL_RWFromConstMem(gamma_gamecontrollerdb, sizeof gamma_gamecontrollerdb), 1);
 
   if (added == -1) {
-    std::fprintf(stderr, "Unable to load game controller mappings: %s", SDL_GetError());
+    std::fprintf(stderr, "Unable to load game controller mappings: %s\n", SDL_GetError());
   }
 
   // initialize Agate
@@ -100,6 +108,7 @@ int main(int argc, char *argv[]) {
   gma::MathUnit::provide_support(support);
   gma::RenderUnit::provide_support(support);
   gma::SpriteUnit::provide_support(support);
+  gma::TextUnit::provide_support(support);
   gma::TimeUnit::provide_support(support);
   gma::WindowUnit::provide_support(support);
 
@@ -120,6 +129,12 @@ int main(int argc, char *argv[]) {
   // shutdown SDL
 
   SDL_Quit();
+
+  // shutdown FreeType
+
+  if (FT_Error err; (err = FT_Done_FreeType(gma::Font::library)) != 0) {
+    std::fprintf(stderr, "Unable to unload FreeType: %s\n", gma::Font::error_message(err));
+  }
 
   return EXIT_SUCCESS;
 }

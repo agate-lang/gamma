@@ -346,6 +346,14 @@ namespace gma {
     static void set_position(AgateVM *vm) { generic_set(vm, &value_type::position, "position"); }
     static void set_size(AgateVM *vm) { generic_set(vm, &value_type::size, "size"); }
 
+    static void center(AgateVM *vm) {
+      assert(agateCheckTag<Class>(vm, 0));
+      auto rect = agateSlotGet<Class>(vm, 0);
+
+      auto result = agateSlotNew<member_class>(vm, AGATE_RETURN_SLOT);
+      *result = rect->position + rect->size / member_member_type(2);
+    }
+
     static void contains(AgateVM *vm) {
       assert(agateCheckTag<Class>(vm, 0));
       auto rect = agateSlotGet<Class>(vm, 0);
@@ -635,6 +643,7 @@ namespace gma {
     support.add_method(unit_name, Api::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "position=(_)", Api::set_position);
     support.add_method(unit_name, Api::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "size", Api::get_size);
     support.add_method(unit_name, Api::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "size=(_)", Api::set_size);
+    support.add_method(unit_name, Api::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "center", Api::center);
     support.add_method(unit_name, Api::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "contains(_)", Api::contains);
     support.add_method(unit_name, Api::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "intersects(_)", Api::intersects);
   }

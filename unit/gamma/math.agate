@@ -76,6 +76,8 @@ foreign class RectF {
   size foreign
   size=(value) foreign
 
+  center foreign
+
   contains(other) foreign
   intersects(other) foreign
 
@@ -105,6 +107,8 @@ foreign class RectI {
 
   size foreign
   size=(value) foreign
+
+  center foreign
 
   contains(other) foreign
   intersects(other) foreign

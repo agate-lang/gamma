@@ -10,6 +10,7 @@ option(GAMMA_USE_EMBEDDED_LIBS "Build the library with the submodule libraries" 
 include(GNUInstallDirs)
 
 find_package(SDL2 REQUIRED)
+find_package(Freetype REQUIRED)
 
 if(GAMMA_USE_EMBEDDED_LIBS)
   message(STATUS "Build with embedded libraries")
@@ -33,6 +34,7 @@ add_executable(gamma
   src/gamma_sprite.cc
   src/gamma_support.cc
   src/gamma_tag.cc
+  src/gamma_text.cc
   src/gamma_time.cc
   src/gamma_window.cc
 
@@ -73,6 +75,7 @@ target_link_libraries(gamma
   PRIVATE
     $<TARGET_NAME_IF_EXISTS:SDL2::SDL2main>
     $<IF:$<TARGET_EXISTS:SDL2::SDL2>,SDL2::SDL2,SDL2::SDL2-static>
+    Freetype::Freetype
 )
 
 install(

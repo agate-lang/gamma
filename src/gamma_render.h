@@ -105,7 +105,6 @@ namespace gma {
     GLuint texture0;
     GLuint texture1;
     GLuint shader;
-    RectF bounds;
     Mat3F transform;
   };
 

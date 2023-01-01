@@ -3,9 +3,47 @@
 # Copyright (c) 2022 Julien Bernard
 
 foreign class Font {
+  construct from_file(filename) foreign
+}
 
+class Alignment {
+  static NONE foreign
+  static LEFT foreign
+  static RIGHT foreign
+  static JUSTIFY foreign
+  static CENTER foreign
 }
 
 foreign class Text {
+  construct new(font, string, size) foreign
 
+  font foreign
+  font=(value) foreign
+
+  string foreign
+  string=(value) foreign
+
+  size foreign
+  size=(value) foreign
+
+  color foreign
+  color=(value) foreign
+
+  outline_thickness foreign
+  outline_thickness=(value) foreign
+
+  outline_color foreign
+  outline_color=(value) foreign
+
+  line_spacing foreign
+  line_spacing=(value) foreign
+
+  letter_spacing foreign
+  letter_spacing=(value) foreign
+
+  paragraph_width foreign
+  paragraph_width=(value) foreign
+
+  alignment foreign
+  alignment=(value) foreign
 }

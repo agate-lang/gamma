@@ -429,7 +429,9 @@ namespace gma {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
-  RendererData Sprite::render() {
+  void Sprite::render(Renderer& renderer, const Transform& transform) {
+    RectF bounds = { vec(0.0f, 0.0f), region.size * size };
+
     RendererData data;
     data.primitive = GL_TRIANGLE_STRIP;
     data.count = 4;
@@ -439,8 +441,8 @@ namespace gma {
     data.texture0 = id;
     data.texture1 = 0;
     data.shader = 0;
-    data.bounds = { vec(0.0f, 0.0f), region.size * size };
-    return data;
+    data.transform = transform.compute_matrix(bounds);
+    renderer.draw(data);
   }
 
   struct SpriteApi : SpriteClass {
