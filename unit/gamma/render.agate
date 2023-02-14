@@ -84,11 +84,11 @@ foreign class Renderer {
   device_to_world(coordinates) foreign
   device_to_world(coordinates, camera) foreign
 
-  draw_object(object, transform) foreign
+  draw_object(object, transform) { object.render(this, transform) }
 
-  draw(object, position) { .draw_object(object, Transform(position)) }
-  draw(object, position, origin) { .draw_object(object, Transform(position, origin)) }
-  draw(object, position, origin, angle) { .draw_object(object, Transform(position, origin, angle)) }
+  draw(object, position) { object.render(this, Transform.new(position)) }
+  draw(object, position, origin) { object.render(this, Transform.new(position, origin)) }
+  draw(object, position, origin, angle) { object.render(this, Transform.new(position, origin, angle)) }
 
   draw_rect(rect, color) foreign
 #   draw_rect(rect, color, outline_thickness, outline_color) foreign

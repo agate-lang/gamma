@@ -979,6 +979,24 @@ namespace gma {
       text->update_buffer();
     }
 
+    static void render(AgateVM *vm) {
+      assert(agateCheckTag<TextClass>(vm, 0));
+      auto text = agateSlotGet<TextClass>(vm, 0);
+
+      if (!agateCheckTag<RendererClass>(vm, 1)) {
+        agateError(vm, "Renderer parameter expected for `renderer`.");
+        return;
+      }
+
+      if (!agateCheckTag<TransformClass>(vm, 2)) {
+        agateError(vm, "Transform parameter expected for `transform`.");
+        return;
+      }
+
+      text->render(*agateSlotGet<RendererClass>(vm, 1), *agateSlotGet<TransformClass>(vm, 2));
+      agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    }
+
   };
 
   /*
@@ -1035,6 +1053,7 @@ namespace gma {
     support.add_method(unit_name, TextApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "paragraph_width=(_)", TextApi::set_paragraph_width);
     support.add_method(unit_name, TextApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "alignment", TextApi::get_alignment);
     support.add_method(unit_name, TextApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "alignment=(_)", TextApi::set_alignment);
+    support.add_method(unit_name, TextApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "render(_,_)", TextApi::render);
 
     #define X(name) support.add_method(unit_name, AlignmentApi::class_name, AGATE_FOREIGN_METHOD_CLASS, #name, AlignmentApi::name);
     GAMMA_ALIGNMENT_LIST

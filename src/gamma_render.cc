@@ -1017,41 +1017,6 @@ namespace gma {
       *result = renderer->device_to_world(coordinates, camera);
     }
 
-    static void draw_object(AgateVM *vm) {
-      assert(agateCheckTag<RendererClass>(vm, 0));
-      auto renderer = agateSlotGet<RendererClass>(vm, 0);
-
-      if (agateSlotType(vm, 1) != AGATE_TYPE_FOREIGN) {
-        agateError(vm, "Graphical object parameter expected for `object`.");
-        return;
-      }
-
-      if (!agateCheckTag<TransformClass>(vm, 2)) {
-        agateError(vm, "Transform parameter expected for `transform`.");
-        return;
-      }
-
-      const auto transform = agateSlotGet<TransformClass>(vm, 2);
-
-      switch (agateSlotGetForeignTag(vm, 1)) {
-        case SpriteClass::tag: {
-          auto sprite = agateSlotGet<SpriteClass>(vm, 1);
-          sprite->render(*renderer, *transform);
-          break;
-        }
-
-        case TextClass::tag: {
-          auto text = agateSlotGet<TextClass>(vm, 1);
-          text->render(*renderer, *transform);
-          break;
-        }
-
-        default:
-          agateError(vm, "Graphical object parameter expected for `object`.");
-          break;
-      }
-    }
-
     static void draw_rect2(AgateVM *vm) {
       assert(agateCheckTag<RendererClass>(vm, 0));
       auto renderer = agateSlotGet<RendererClass>(vm, 0);
@@ -1183,7 +1148,6 @@ namespace gma {
     support.add_method(unit_name, RendererApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "world_to_device(_,_)", RendererApi::world_to_device2);
     support.add_method(unit_name, RendererApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "device_to_world(_)", RendererApi::device_to_world1);
     support.add_method(unit_name, RendererApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "device_to_world(_,_)", RendererApi::device_to_world2);
-    support.add_method(unit_name, RendererApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "draw_object(_,_)", RendererApi::draw_object);
     support.add_method(unit_name, RendererApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "draw_rect(_,_)", RendererApi::draw_rect2);
     support.add_method(unit_name, RendererApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "vsynced", RendererApi::is_vsynced);
     support.add_method(unit_name, RendererApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "vsynced=(_)", RendererApi::set_vsynced);

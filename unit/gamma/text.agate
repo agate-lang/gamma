@@ -46,4 +46,6 @@ foreign class Text {
 
   alignment foreign
   alignment=(value) foreign
+
+  render(renderer, transform) foreign
 }

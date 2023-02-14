@@ -42,4 +42,6 @@ foreign class Sprite {
 
   color foreign
   color=(value) foreign
+
+  render(renderer, transform) foreign
 }

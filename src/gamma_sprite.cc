@@ -533,6 +533,24 @@ namespace gma {
       sprite->update_buffer();
     }
 
+    static void render(AgateVM *vm) {
+      assert(agateCheckTag<SpriteClass>(vm, 0));
+      auto sprite = agateSlotGet<SpriteClass>(vm, 0);
+
+      if (!agateCheckTag<RendererClass>(vm, 1)) {
+        agateError(vm, "Renderer parameter expected for `renderer`.");
+        return;
+      }
+
+      if (!agateCheckTag<TransformClass>(vm, 2)) {
+        agateError(vm, "Transform parameter expected for `transform`.");
+        return;
+      }
+
+      sprite->render(*agateSlotGet<RendererClass>(vm, 1), *agateSlotGet<TransformClass>(vm, 2));
+      agateSlotSetNil(vm, AGATE_RETURN_SLOT);
+    }
+
   };
 
 
@@ -568,6 +586,7 @@ namespace gma {
     support.add_method(unit_name, SpriteApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "texture_region=(_)", SpriteApi::set_texture_region);
     support.add_method(unit_name, SpriteApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "color", SpriteApi::get_color);
     support.add_method(unit_name, SpriteApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "color=(_)", SpriteApi::set_color);
+    support.add_method(unit_name, SpriteApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "render(_,_)", SpriteApi::render);
   }
 
 }
