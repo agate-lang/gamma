@@ -1,0 +1,253 @@
+# gamma, GAMes Made with Agate
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2022 Julien Bernard
+
+import "gamma/color" for Color
+import "gamma/event" for Event
+import "gamma/time" for Clock
+import "gamma/render" for Camera, Renderer, Transform
+import "gamma/sprite" for Texture
+import "gamma/window" for Window
+
+class Scene {
+  construct new() {
+    @clear_color = Color.BLACK
+    @world_camera = Camera.new_extend((0, 0), (1, 1))
+    @fixed_camera = Camera.new_screen((0, 0), (1, 1))
+    @cameras = [ @world_camera, @fixed_camera ]
+    @actions = []
+    @models = []
+    @world_entities = []
+    @fixed_entities = []
+    @active = true
+    @paused = false
+    @hidden = false
+    @close = false
+  }
+
+  clear_color { @clear_color }
+  clear_color=(value) { @clear_color = value }
+
+  process_event(event) { }
+  handle_actions(window) { }
+  update(time) { }
+
+  render(renderer) {
+    .render_world_entities(renderer)
+    .render_fixed_entities(renderer)
+  }
+
+  render_world_entities(renderer) {
+    renderer.camera = @world_camera
+    for (entity in @world_entities) {
+      entity.render(renderer)
+    }
+  }
+
+  render_fixed_entities(renderer) {
+    renderer.camera = @fixed_camera
+    for (entity in @fixed_entities) {
+      entity.render(renderer)
+    }
+  }
+
+  active { @active }
+  active=(value) { @active = value }
+
+  paused { @paused }
+  paused=(value) { @paused = value }
+
+  hidden { @hidden }
+  hidden=(value) { @hidden = value }
+
+  world_view { @world_view }
+  fixed_view { @fixed_view }
+
+  __process_event(event) {
+    if (event.type == Event.CLOSED) {
+      @close = true
+    }
+    .process_event(event)
+  }
+
+  __handle_actions(window) {
+    if (@close) {
+      window.close()
+    }
+
+    .handle_actions(window)
+
+    for (action in @actions) {
+      action.reset()
+    }
+  }
+
+  __update(time) {
+    if (@paused) {
+      return
+    }
+    for (model in @models) {
+      model.update(time)
+    }
+    for (entity in @world_entities) {
+      entity.update(time)
+    }
+    for (entity in @fixed_entities) {
+      entity.update(time)
+    }
+    .update(time)
+  }
+
+  __render(renderer) {
+    if (@hidden) {
+      return
+    }
+    .render(renderer)
+  }
+}
+
+class SceneManager {
+  construct new(title, size) {
+    @window = Window.new(title, size)
+    @renderer = Renderer.new(@window)
+    @curr_scenes = []
+    @prev_scenes = []
+    @curr_target = Texture.new(size)
+    @prev_target = Texture.new(size)
+    @scene_changed = false
+    @transition = false
+    @segue = nil
+  }
+
+  run() {
+    def clock = Clock.new()
+    @renderer.clear(Color.WHITE)
+
+    while (!@curr_scenes.empty && @window.open) {
+      def scenes = @curr_scenes.to_a
+      @scene_changed = false
+
+      def curr_scene = scenes[-1]
+      curr_scene.hidden = false
+      curr_scene.paused = false
+
+      def clear_color = curr_scene.clear_color
+
+      while (!@scene_changed && @window.open) {
+        def transition = @transition
+
+        # input
+
+        def event = nil
+
+        while (event = Event.poll()) {
+          for (scene in scenes) {
+            scene.__process_event(event)
+          }
+        }
+
+        for (scene in scenes) {
+          scene.__handle_actions(@window)
+        }
+
+        # update
+
+        def time = clock.restart()
+
+        if (!transition) {
+          for (scene in scenes) {
+            scene.__update(time)
+          }
+
+          @renderer.switch_to(@window)
+          @renderer.clear(clear_color)
+
+          for (scene in scenes) {
+            scene.__render(@renderer)
+          }
+
+          @renderer.display()
+        } else {
+          @segue.update(time)
+
+          .__update_and_render_scenes(time, @prev_scenes, @prev_target, @renderer)
+          .__update_and_render_scenes(time, @curr_scenes, @curr_target, @renderer)
+
+          @renderer.switch_to(@window)
+
+          @renderer.camera = @camera
+          @renderer.clear(clear_color)
+          @renderer.draw_object(@segue, Transform.new())
+          @renderer.display()
+
+          if (!@segue.active) {
+            @transition = false
+          }
+        }
+
+        System.gc()
+      }
+    }
+  }
+
+  push_scene(scene) {
+    assert(scene is Scene, "scene should be a Scene.")
+    @scene_changed = true
+
+    if (!@curr_scenes.empty) {
+      @curr_scene[-1].active = false
+    }
+
+    @curr_scenes.append(scene)
+    scene.active = true
+  }
+
+  push_scenes(scenes) {
+    assert(scenes.all {|scene| scene is Scene }, "scenes should be a sequence of Scene.")
+
+    if (scenes.empty) {
+      return
+    }
+
+    @scene_changed = true
+
+    if (!@curr_scenes.empty) {
+      @curr_scene[-1].active = false
+    }
+
+    @curr_scenes.append_all(scenes)
+    scenes[-1].active = true
+  }
+
+  pop_scene() {
+    @scene_changed = true
+
+    assert(!@curr_scenes.empty, "Unable to pop an empty array.")
+    @curr_scenes.erase(-1)
+
+    if (!@curr_scenes.empty) {
+      @curr_scene[-1].active = true
+    }
+  }
+
+  pop_scenes() {
+    @scene_changed = true
+    @curr_scenes.clear()
+  }
+
+  __update_and_render_scenes(time, scenes, texture, renderer) {
+    renderer.switch_to(texture)
+
+    for (scene in scenes) {
+      scene.__update(time)
+    }
+
+    renderer.clear(scenes[-1].clear_color)
+
+    for (scene in scenes) {
+      scene.__render(renderer)
+    }
+
+    renderer.display()
+  }
+}
