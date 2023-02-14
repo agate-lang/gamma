@@ -20,27 +20,6 @@ namespace gma {
 
   FT_Library Font::library = nullptr;
 
-  Font::Font(const char *filename)
-  : stroker(nullptr)
-  , face(nullptr)
-  , current_size(0)
-  , cache(nullptr)
-  {
-    assert(library != nullptr);
-
-    if (FT_Error err; (err = FT_Stroker_New(library, &stroker)) != 0) {
-      // TODO
-      std::printf("Error while creating stroker\n");
-    }
-
-    if (FT_Error err; (err = FT_New_Face(library, filename, 0, &face)) != 0) {
-      // TODO
-      std::printf("Error while creating face\n");
-    }
-
-    cache = new FontCache;
-  }
-
   void Font::destroy() {
     delete cache;
     cache = nullptr;
@@ -52,7 +31,7 @@ namespace gma {
       face = nullptr;
     }
 
-    if (stroker) {
+    if (stroker != nullptr) {
       FT_Stroker_Done(stroker);
       stroker = nullptr;
     }
@@ -292,7 +271,24 @@ namespace gma {
         return;
       }
 
-      *font = Font(filename);
+      font->stroker = nullptr;
+      font->face = nullptr;
+      font->current_size = 0;
+      font->cache = nullptr;
+
+      assert(Font::library != nullptr);
+
+      if (FT_Error err; (err = FT_Stroker_New(Font::library, &font->stroker)) != 0) {
+        agateError(vm, "Could not create stroker.");
+        return;
+      }
+
+      if (FT_Error err; (err = FT_New_Face(Font::library, filename, 0, &font->face)) != 0) {
+        agateError(vm, "Could not create face.");
+        return;
+      }
+
+      font->cache = new FontCache;
     }
 
   };

@@ -117,6 +117,9 @@ int main(int argc, char *argv[]) {
   const char *source = support.load_unit(argv[1]);
 
   if (source != nullptr) {
+    std::filesystem::path script_path(argv[1]);
+    std::filesystem::current_path(script_path.parent_path());
+
     agateCallString(vm, argv[1], source);
   } else {
     std::fprintf(stderr, "Could not find gamma unit '%s'.\n", argv[1]);

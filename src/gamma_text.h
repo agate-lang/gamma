@@ -56,8 +56,6 @@ namespace gma {
     FT_UInt current_size;
     FontCache *cache;
 
-    Font() = default;
-    Font(const char *filename);
     void destroy();
 
     GLuint get_texture(FT_UInt size);

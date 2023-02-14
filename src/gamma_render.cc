@@ -816,8 +816,8 @@ namespace gma {
     RectI viewport = camera_ptr->compute_viewport(framebuffer_size);
 
     /* apply view transform
-    * i.e. compute normalized device coordinates from world coordinates
-    */
+     * i.e. compute normalized device coordinates from world coordinates
+     */
 
     Mat3F view = camera_ptr->compute_view_matrix();
     Vec2F normalized = transform_point(view, position);
@@ -858,8 +858,8 @@ namespace gma {
     normalized.y = 1.0f - 2.0f * (coordinates.y - viewport.position.y) / viewport.size.y;
 
     /* apply inverse view transform
-    * i.e. compute world coordinates from normalized device coordinates
-    */
+     * i.e. compute world coordinates from normalized device coordinates
+     */
 
     Mat3F view = camera_ptr->compute_view_matrix();
     Mat3F inverse_view = inverse(view);

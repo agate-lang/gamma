@@ -39,8 +39,8 @@ namespace gma {
   private:
     std::vector<std::filesystem::path> m_include_paths;
     std::map<std::filesystem::path, std::string> m_units;
-    std::map<std::tuple<std::string, std::string>, AgateForeignClassHandler, std::less<>> m_class_handlers;
-    std::map<std::tuple<std::string, std::string, AgateForeignMethodKind, std::string>, AgateForeignMethodFunc, std::less<>> m_methods;
+    std::map<std::tuple<std::string, std::string>, AgateForeignClassHandler> m_class_handlers;
+    std::map<std::tuple<std::string, std::string, AgateForeignMethodKind, std::string>, AgateForeignMethodFunc> m_methods;
   };
 
   template<typename Class>
