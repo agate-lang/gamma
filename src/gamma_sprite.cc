@@ -255,6 +255,20 @@ namespace gma {
       texture->destroy();
     }
 
+    static void new1(AgateVM *vm) {
+      assert(agateCheckTag<TextureClass>(vm, 0));
+      auto texture = agateSlotGet<TextureClass>(vm, 0);
+
+      Vec2I size;
+
+      if (!agateCheck(vm, 1, size)) {
+        agateError(vm, "Vec2I parameter expected for `value`.");
+        return;
+      }
+
+      new (texture) Texture(TextureKind::COLOR, size.x, size.y, nullptr);
+    }
+
     static void from_file(AgateVM *vm) {
       assert(agateCheckTag<TextureClass>(vm, 0));
       auto texture = agateSlotGet<TextureClass>(vm, 0);
@@ -273,7 +287,7 @@ namespace gma {
         return;
       }
 
-      *texture = Texture(TextureKind::COLOR, image.width, image.height, image.pixels);
+      new (texture) Texture(TextureKind::COLOR, image.width, image.height, image.pixels);
       image.destroy();
     }
 
@@ -287,7 +301,7 @@ namespace gma {
       }
 
       auto image = agateSlotGet<ImageClass>(vm, 1);
-      *texture = Texture(TextureKind::COLOR, image->width, image->height, image->pixels);
+      new (texture) Texture(TextureKind::COLOR, image->width, image->height, image->pixels);
     }
 
     static void get_size(AgateVM *vm) {
@@ -599,6 +613,7 @@ namespace gma {
     support.add_method(unit_name, ImageApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "[_]=(_)", ImageApi::subscript_setter1);
     support.add_method(unit_name, ImageApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "[_,_]=(_)", ImageApi::subscript_setter2);
 
+    support.add_method(unit_name, TextureApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "init new(_)", TextureApi::new1);
     support.add_method(unit_name, TextureApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "init from_file(_)", TextureApi::from_file);
     support.add_method(unit_name, TextureApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "init from_image(_)", TextureApi::from_image);
     support.add_method(unit_name, TextureApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "size", TextureApi::get_size);

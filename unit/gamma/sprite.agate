@@ -16,6 +16,7 @@ foreign class Image {
 }
 
 foreign class Texture {
+  construct new(size) foreign
   construct from_file(filename) foreign
   construct from_image(image) foreign
 
