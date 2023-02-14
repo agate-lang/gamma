@@ -118,7 +118,11 @@ int main(int argc, char *argv[]) {
 
   if (source != nullptr) {
     std::filesystem::path script_path(argv[1]);
-    std::filesystem::current_path(script_path.parent_path());
+    std::filesystem::path script_directory = script_path.parent_path();
+
+    if (!script_directory.empty()) {
+      std::filesystem::current_path(script_directory);
+    }
 
     agateCallString(vm, argv[1], source);
   } else {
