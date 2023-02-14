@@ -109,4 +109,6 @@ foreign class Renderer {
 
   vsynced foreign
   vsynced=(value) foreign
+
+  switch_to(target) foreign
 }

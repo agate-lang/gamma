@@ -180,6 +180,7 @@ namespace gma {
   , width(width)
   , height(height)
   , flags(0)
+  , framebuffer(0)
   {
     GAMMA_GL_CHECK(glGenTextures(1, &id));
 
@@ -201,6 +202,11 @@ namespace gma {
   }
 
   void Texture::destroy() {
+    if (framebuffer != 0) {
+      glDeleteFramebuffers(1, &framebuffer);
+      framebuffer = 0;
+    }
+
     if (id != 0) {
       glDeleteTextures(1, &id);
       id = 0;
@@ -215,6 +221,31 @@ namespace gma {
     }
 
     return is_smooth() ? GL_LINEAR : GL_NEAREST;
+  }
+
+  void Texture::make_renderable(Vec2I size) {
+    if (size.x != width || size.y != height) {
+      width = size.x;
+      height = size.y;
+
+      GLint alignment = (kind == TextureKind::COLOR) ? 4 : 1;
+      GLenum format = (kind == TextureKind::COLOR) ? GL_RGBA : GL_RED;
+
+      GAMMA_GL_CHECK(glPixelStorei(GL_UNPACK_ALIGNMENT, alignment));
+      GAMMA_GL_CHECK(glBindTexture(GL_TEXTURE_2D, id));
+      GAMMA_GL_CHECK(glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr));
+    }
+
+    GAMMA_GL_CHECK(glBindTexture(GL_TEXTURE_2D, 0));
+
+    if (framebuffer == 0) {
+      GAMMA_GL_CHECK(glGenFramebuffers(1, &framebuffer));
+      GAMMA_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
+      GAMMA_GL_CHECK(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0));
+      assert(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE);
+    } else {
+      GAMMA_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, framebuffer));
+    }
   }
 
   struct TextureApi : TextureClass {
@@ -371,7 +402,6 @@ namespace gma {
       glBindTexture(GL_TEXTURE_2D, 0);
 
     }
-
 
   };
 

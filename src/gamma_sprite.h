@@ -62,6 +62,7 @@ namespace gma {
     GLsizei width;
     GLsizei height;
     uint32_t flags;
+    GLuint framebuffer;
 
     Texture() = default;
     Texture(TextureKind kind, GLsizei width, GLsizei height, const uint8_t *data);
@@ -80,6 +81,7 @@ namespace gma {
     }
 
     GLenum compute_min_filter() const;
+    void make_renderable(Vec2I size);
   };
 
   struct TextureClass : SpriteUnit {

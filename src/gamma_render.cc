@@ -1090,6 +1090,25 @@ namespace gma {
       agateSlotCopy(vm, AGATE_RETURN_SLOT, 1);
     }
 
+    static void switch_to(AgateVM *vm) {
+      assert(agateCheckTag<RendererClass>(vm, 0));
+      auto renderer = agateSlotGet<RendererClass>(vm, 0);
+
+      if (agateCheckTag<WindowClass>(vm, 1)) {
+        auto window = agateSlotGet<WindowClass>(vm, 1);
+        SDL_GL_MakeCurrent(window->ptr, renderer->context);
+        GAMMA_GL_CHECK(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+        return;
+      }
+
+      if (agateCheckTag<TextureClass>(vm, 1)) {
+        auto texture = agateSlotGet<TextureClass>(vm, 1);
+        texture->make_renderable(renderer->framebuffer_size);
+        return;
+      }
+
+      agateError(vm, "Window or Texture parameter expected for `target`.");
+    }
 
   };
 
@@ -1151,6 +1170,7 @@ namespace gma {
     support.add_method(unit_name, RendererApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "draw_rect(_,_)", RendererApi::draw_rect2);
     support.add_method(unit_name, RendererApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "vsynced", RendererApi::is_vsynced);
     support.add_method(unit_name, RendererApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "vsynced=(_)", RendererApi::set_vsynced);
+    support.add_method(unit_name, RendererApi::class_name, AGATE_FOREIGN_METHOD_INSTANCE, "switch_to(_)", RendererApi::switch_to);
   }
 
 }
